@@ -18,3 +18,4 @@ dependencyResolutionManagement {
 rootProject.name = "language_selector"
 include(":app")
 include(":hidden-api")
+include(":hidden-api-access")

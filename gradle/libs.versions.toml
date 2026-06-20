@@ -47,6 +47,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 
 [plugins]
 com-android-application = { id = "com.android.application", version.ref = "agp" }
+org-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 com-android-library = { id = "com.android.library", version.ref = "agp" }
 com-google-dagger-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }

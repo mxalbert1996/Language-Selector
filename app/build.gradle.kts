@@ -66,6 +66,7 @@ aboutLibraries {
 
 dependencies {
     compileOnly(project(":hidden-api"))
+    implementation(project(":hidden-api-access"))
 
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)

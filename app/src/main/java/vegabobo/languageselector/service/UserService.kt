@@ -1,6 +1,5 @@
 package vegabobo.languageselector.service
 
-import android.app.ActivityManager
 import android.app.IActivityManager
 import android.app.IActivityTaskManager
 import android.app.ILocaleManager
@@ -9,10 +8,10 @@ import android.os.LocaleList
 import android.os.Process
 import android.util.Log
 import rikka.shizuku.SystemServiceHelper
+import vegabobo.hiddenapi.getCurrentUser
 import vegabobo.languageselector.BuildConfig
 import vegabobo.languageselector.IUserService
 import kotlin.system.exitProcess
-
 
 class UserService : IUserService.Stub() {
 
@@ -37,7 +36,7 @@ class UserService : IUserService.Stub() {
 
     override fun setApplicationLocales(packageName: String?, locales: LocaleList?) {
         requiresLocaleManager()
-        val currentUser = ActivityManager.getCurrentUser()
+        val currentUser = getCurrentUser()
         if (Build.VERSION.SDK_INT == 33 && Build.VERSION.RELEASE_OR_CODENAME != "UpsideDownCake") {
             LOCALE_MANAGER!!.setApplicationLocales(packageName, currentUser, locales)
             return
@@ -47,7 +46,7 @@ class UserService : IUserService.Stub() {
 
     override fun getApplicationLocales(packageName: String?): LocaleList {
         requiresLocaleManager()
-        val currentUser = ActivityManager.getCurrentUser()
+        val currentUser = getCurrentUser()
         return LOCALE_MANAGER!!.getApplicationLocales(packageName, currentUser)
     }
 
@@ -65,7 +64,7 @@ class UserService : IUserService.Stub() {
 
     override fun forceStopPackage(packageName: String?) {
         requiresActivityManager()
-        val currentUser = ActivityManager.getCurrentUser()
+        val currentUser = getCurrentUser()
         ACTIVITY_MANAGER!!.forceStopPackage(packageName, currentUser)
     }
 
