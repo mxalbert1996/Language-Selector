@@ -25,8 +25,8 @@ class UserService : IUserService.Stub() {
 
     override fun getUid(): Int = Process.myUid()
 
-    var LOCALE_MANAGER: ILocaleManager? = null
-    fun requiresLocaleManager() {
+    private var LOCALE_MANAGER: ILocaleManager? = null
+    private fun requiresLocaleManager() {
         if (LOCALE_MANAGER != null) return
         val localeBinder = SystemServiceHelper.getSystemService("locale")
         LOCALE_MANAGER = ILocaleManager.Stub.asInterface(localeBinder)
@@ -53,8 +53,8 @@ class UserService : IUserService.Stub() {
         return LOCALE_MANAGER!!.systemLocales
     }
 
-    var ACTIVITY_MANAGER: IActivityManager? = null
-    fun requiresActivityManager() {
+    private var ACTIVITY_MANAGER: IActivityManager? = null
+    private fun requiresActivityManager() {
         if (ACTIVITY_MANAGER != null) return
         val am = SystemServiceHelper.getSystemService("activity")
         ACTIVITY_MANAGER = IActivityManager.Stub.asInterface(am)
@@ -66,8 +66,8 @@ class UserService : IUserService.Stub() {
         ACTIVITY_MANAGER!!.forceStopPackage(packageName, currentUser)
     }
 
-    var ACTIVITY_TASK_MANAGER: IActivityTaskManager? = null
-    fun requiresActivityTaskManager() {
+    private var ACTIVITY_TASK_MANAGER: IActivityTaskManager? = null
+    private fun requiresActivityTaskManager() {
         if (ACTIVITY_TASK_MANAGER != null) return
         val am = SystemServiceHelper.getSystemService("activity_task")
         ACTIVITY_TASK_MANAGER = IActivityTaskManager.Stub.asInterface(am)

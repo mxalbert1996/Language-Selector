@@ -20,11 +20,11 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "vegabobo.languageselector"
+        applicationId = "com.mxalbert.languageselector"
         minSdk = 33
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.04"
+        versionCode = 6
+        versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -32,9 +32,18 @@ android {
         }
     }
 
+    signingConfigs {
+        register("release") {
+            storeFile = file("key.p12")
+            keyAlias = providers.gradleProperty("signing.release.keyAlias").orNull
+            keyPassword = providers.gradleProperty("signing.release.keyPassword").orNull
+            storePassword = providers.gradleProperty("signing.release.storePassword").orNull
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

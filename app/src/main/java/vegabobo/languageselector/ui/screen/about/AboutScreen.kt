@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import com.mikepenz.aboutlibraries.Libs
-import com.mikepenz.aboutlibraries.util.withContext
+import com.mikepenz.aboutlibraries.util.withJson
 import vegabobo.languageselector.BuildConfig
 import vegabobo.languageselector.R
 import vegabobo.languageselector.ui.components.BackButton
@@ -45,7 +45,7 @@ fun AboutScreen(
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
     val libraries = remember {
-        Libs.Builder().withContext(context).build().libraries
+        Libs.Builder().withJson(context, R.raw.aboutlibraries).build().libraries
     }
 
     BaseScreen(
