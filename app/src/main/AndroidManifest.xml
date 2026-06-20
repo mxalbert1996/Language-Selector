@@ -4,7 +4,7 @@
 
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
-        tools:ignore="QueryAllPackagesPermission" />
+        tools:ignore="PackageVisibilityPolicy,QueryAllPackagesPermission" />
 
     <application
         android:name=".App"
@@ -18,10 +18,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.LanguageSelector">
+        <!--suppress AndroidDomInspection -->
         <activity
             android:name=".MainActivity"
+            android:configChanges="allKnown"
             android:exported="true"
-            android:theme="@style/Theme.LanguageSelector">
+            android:theme="@style/Theme.LanguageSelector"
+            android:windowSoftInputMode="adjustNothing">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

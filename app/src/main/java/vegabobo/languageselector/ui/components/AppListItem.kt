@@ -17,11 +17,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.toBitmap
 import vegabobo.languageselector.ui.screen.main.AppInfo
 
 @Composable
@@ -38,7 +36,7 @@ fun AppListItem(
     ) {
         Image(
             modifier = Modifier.size(32.dp),
-            bitmap = app.icon.toBitmap().asImageBitmap(),
+            painter = app.icon,
             contentDescription = "app icon",
         )
         Spacer(modifier = Modifier.padding(8.dp))

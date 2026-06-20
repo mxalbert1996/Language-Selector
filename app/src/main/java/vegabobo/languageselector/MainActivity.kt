@@ -8,7 +8,6 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.view.WindowCompat
-import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ipc.RootService
 import dagger.hilt.android.AndroidEntryPoint
 import rikka.shizuku.Shizuku
@@ -33,14 +32,9 @@ object ShizukuArgs {
 @AndroidEntryPoint
 class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListener {
 
-    init {
-        Shell.enableVerboseLogging = BuildConfig.DEBUG
-        Shell.setDefaultBuilder(Shell.Builder.create().setTimeout(10))
-    }
+    private val acRequestCode = 1
 
-    val acRequestCode = 1
-
-    fun bindShizuku() {
+    private fun bindShizuku() {
         Shizuku.bindUserService(ShizukuArgs.userServiceArgs, UserServiceProvider.connection)
     }
 
@@ -81,7 +75,9 @@ class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListe
             object : IRootListener {
                 override fun onRootReceived() {
                     val intent = Intent(application, RootUserService::class.java)
-                    RootService.bind(intent, UserServiceProvider.connection)
+                    runOnUiThread {
+                        RootService.bind(intent, UserServiceProvider.connection)
+                    }
                 }
             },
         )

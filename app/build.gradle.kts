@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.com.mikepenz.aboutlibraries)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.com.google.devtools.ksp)
+    alias(libs.plugins.androidx.room)
 }
 
 kotlin {
@@ -58,6 +59,10 @@ android {
     }
 }
 
+room {
+    schemaDirectory(layout.projectDirectory.dir("schemas"))
+}
+
 aboutLibraries {
     export {
         excludeFields.addAll("generated")
@@ -83,6 +88,7 @@ dependencies {
     implementation(libs.ui.tooling.preview)
     implementation(libs.material)
     implementation(libs.material3)
+    implementation(libs.accompanist.drawablepainter)
 
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.navigation.compose)
@@ -103,4 +109,5 @@ dependencies {
 
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.work.runtime)
 }

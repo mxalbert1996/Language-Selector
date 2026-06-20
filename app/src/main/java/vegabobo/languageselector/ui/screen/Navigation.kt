@@ -1,6 +1,8 @@
 package vegabobo.languageselector.ui.screen
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalDensity
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -12,6 +14,7 @@ import vegabobo.languageselector.ui.screen.Destinations.HOME
 import vegabobo.languageselector.ui.screen.about.AboutScreen
 import vegabobo.languageselector.ui.screen.appinfo.AppInfoScreen
 import vegabobo.languageselector.ui.screen.main.MainScreen
+import vegabobo.languageselector.ui.theme.Transitions
 
 object Destinations {
     const val HOME = "home"
@@ -22,9 +25,15 @@ object Destinations {
 @Composable
 fun Navigation() {
     val navController = rememberNavController()
+    val density = LocalDensity.current
+    val transitions = remember(density) { Transitions(density) }
     NavHost(
         navController = navController,
         startDestination = HOME,
+        enterTransition = { transitions.enter },
+        exitTransition = { transitions.exit },
+        popEnterTransition = { transitions.popEnter },
+        popExitTransition = { transitions.popExit },
     ) {
         composable(
             route = HOME,

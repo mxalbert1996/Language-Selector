@@ -4,6 +4,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.graphics.painter.Painter
 import vegabobo.languageselector.dao.AppInfoEntity
 
 enum class OperationMode {
@@ -40,7 +41,7 @@ enum class AppLabels {
 }
 
 data class AppInfo(
-    val icon: Drawable,
+    val icon: Painter,
     val name: String,
     val pkg: String,
     val labels: List<AppLabels> = emptyList(),

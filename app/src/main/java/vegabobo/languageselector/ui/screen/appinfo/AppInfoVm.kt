@@ -12,6 +12,7 @@ import android.provider.Settings
 import android.util.Log
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
+import com.google.accompanist.drawablepainter.DrawablePainter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
@@ -46,7 +47,7 @@ class AppInfoVm @Inject constructor(
             it.copy(
                 appName = app.packageManager.getLabel(appInfo),
                 appPackage = appInfo.packageName,
-                appIcon = app.packageManager.getAppIcon(appInfo),
+                appIcon = DrawablePainter(app.packageManager.getAppIcon(appInfo)),
             )
         }
 

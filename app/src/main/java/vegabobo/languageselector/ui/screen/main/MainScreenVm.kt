@@ -8,6 +8,7 @@ import android.os.Looper
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.accompanist.drawablepainter.DrawablePainter
 import com.topjohnwu.superuser.Shell
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -74,7 +75,7 @@ class MainScreenVm @Inject constructor(
             labels.add(AppLabels.MODIFIED)
         }
         return AppInfo(
-            icon = app.packageManager.getAppIcon(a),
+            icon = DrawablePainter(app.packageManager.getAppIcon(a)),
             name = app.packageManager.getLabel(a),
             pkg = a.packageName,
             labels = labels,

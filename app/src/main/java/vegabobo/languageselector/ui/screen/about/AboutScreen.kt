@@ -51,11 +51,10 @@ fun AboutScreen(
     BaseScreen(
         title = stringResource(R.string.about),
         navIcon = { BackButton { navigateBack() } },
-    ) {
+    ) { padding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = it.calculateTopPadding()),
+            contentPadding = padding,
+            modifier = Modifier.fillMaxSize(),
         ) {
             item {
                 Column(
@@ -107,7 +106,6 @@ fun AboutScreen(
                     },
                 )
             }
-            item { Spacer(modifier = Modifier.padding(bottom = it.calculateBottomPadding())) }
         }
     }
 }

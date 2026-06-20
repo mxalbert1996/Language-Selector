@@ -7,7 +7,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,18 +22,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import vegabobo.languageselector.R
@@ -77,12 +72,11 @@ fun AppInfoScreen(
         navIcon = {
             BackButton { navigateBack() }
         },
-    ) {
+    ) { padding ->
         LazyColumn(
             state = listState,
-            modifier = Modifier
-                .padding(top = it.calculateTopPadding())
-                .animateContentSize(),
+            contentPadding = padding,
+            modifier = Modifier.animateContentSize(),
         ) {
             item {
                 Row(
@@ -93,9 +87,7 @@ fun AppInfoScreen(
                 ) {
                     Image(
                         modifier = Modifier.size(84.dp),
-                        painter = uiState.appIcon?.toBitmap()?.asImageBitmap()?.let { bitmap ->
-                            remember(bitmap) { BitmapPainter(bitmap) }
-                        } ?: painterResource(R.drawable.icon_placeholder),
+                        painter = uiState.appIcon ?: painterResource(R.drawable.icon_placeholder),
                         contentDescription = "App icon",
                     )
                     Column(
@@ -206,7 +198,6 @@ fun AppInfoScreen(
                     }
                 }
             }
-            item { Spacer(modifier = Modifier.padding(it.calculateBottomPadding())) }
         }
     }
 

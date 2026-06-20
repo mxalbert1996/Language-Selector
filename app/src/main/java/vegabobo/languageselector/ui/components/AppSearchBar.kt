@@ -6,8 +6,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -35,18 +43,18 @@ import vegabobo.languageselector.ui.screen.main.AppLabels
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppSearchBar(
-    modifier: Modifier = Modifier,
-    placeholder: String = "",
     query: String,
     onUpdatedValue: (String) -> Unit,
-    apps: List<AppInfo> = emptyList(),
-    history: List<AppInfo> = emptyList(),
     isExpanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     selectedLabels: List<AppLabels>,
     onSelectedLabelsChange: (AppLabels) -> Unit,
     onClickApp: (AppInfo) -> Unit,
     onClickClear: () -> Unit,
+    modifier: Modifier = Modifier,
+    placeholder: String = "",
+    apps: List<AppInfo> = emptyList(),
+    history: List<AppInfo> = emptyList(),
     actions: @Composable RowScope.() -> Unit,
 ) {
     SearchBar(
@@ -75,7 +83,14 @@ fun AppSearchBar(
         expanded = isExpanded,
         onExpandedChange = { onExpandedChange(it) },
     ) {
-        LazyColumn {
+        val imeInset = WindowInsets.ime
+        LazyColumn(
+            contentPadding = WindowInsets.safeDrawing
+                .exclude(imeInset)
+                .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+                .asPaddingValues(),
+            modifier = Modifier.windowInsetsPadding(imeInset),
+        ) {
             if (query.isNotBlank()) {
                 item {
                     Row(
