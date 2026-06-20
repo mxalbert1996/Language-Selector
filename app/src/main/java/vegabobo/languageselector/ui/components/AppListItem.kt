@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,13 +25,15 @@ import vegabobo.languageselector.ui.screen.main.AppInfo
 
 @Composable
 fun AppListItem(
-    modifier: Modifier = Modifier,
     app: AppInfo,
     onClickApp: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    extraLabel: String = "",
+    enabled: Boolean = true,
 ) {
     Row(
         modifier = Modifier
-            .clickable { onClickApp(app.pkg) }
+            .clickable(enabled = enabled) { onClickApp(app.pkg) }
             .then(modifier),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -38,6 +41,11 @@ fun AppListItem(
             modifier = Modifier.size(32.dp),
             painter = app.icon,
             contentDescription = "app icon",
+            colorFilter = if (enabled) {
+                null
+            } else {
+                ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+            },
         )
         Spacer(modifier = Modifier.padding(8.dp))
         Column(
@@ -50,6 +58,9 @@ fun AppListItem(
                 TextLabel(text = if (app.isSystemApp()) "System App" else "User App")
                 if (app.isModified()) {
                     TextLabel(text = "Modified")
+                }
+                if (extraLabel.isNotEmpty()) {
+                    TextLabel(text = extraLabel)
                 }
             }
         }

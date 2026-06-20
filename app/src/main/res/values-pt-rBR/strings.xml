@@ -18,6 +18,9 @@
     <string name="pinned_ok">%1$s fixado</string>
     <string name="unpinned">%1$s desafixado</string>
     <string name="about">Sobre</string>
+    <string name="recorded_apps">Apps registrados</string>
+    <string name="no_recorded_apps">Nenhum app registrado ainda</string>
+    <string name="no_recorded_apps_body">Os apps para os quais você definiu um idioma aparecerão aqui.</string>
     <string name="deps_libs">Dependências e bibliotecas</string>
     <string name="version">versão %1$s (%2$s)</string>
     <string name="app">Aplicativo</string>
@@ -28,4 +31,6 @@
     <string name="warning">Aviso</string>
     <string name="warning_system_apps">Selecionar idiomas de aplicativos do sistema não é recomendado, você tem certeza?</string>
     <string name="cancel">Cancelar</string>
+
+    <string name="search">Pesquisar apps</string>
 </resources>

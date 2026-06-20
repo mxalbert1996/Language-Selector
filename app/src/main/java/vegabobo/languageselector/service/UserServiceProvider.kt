@@ -1,6 +1,7 @@
 package vegabobo.languageselector.service
 
 import android.util.Log
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -46,7 +47,7 @@ object UserServiceProvider {
                     onFail()
                     return@launch
                 }
-                delay(1000)
+                delay(1000.milliseconds)
                 Log.d(tag, "Service unavailable, checking again in 1s.. [${timeout / 1000}s/20s]")
             }
             val serviceUid = service().uid
@@ -62,4 +63,8 @@ object UserServiceProvider {
     }
 
     fun isConnected(): Boolean = connection.SERVICE != null
+
+    fun addOnConnectedListener(listener: () -> Unit) {
+        connection.addOnConnectedListener(listener)
+    }
 }

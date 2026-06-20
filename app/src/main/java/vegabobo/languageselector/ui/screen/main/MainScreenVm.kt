@@ -22,12 +22,14 @@ import rikka.shizuku.Shizuku
 import vegabobo.languageselector.BuildConfig
 import vegabobo.languageselector.RootReceivedListener
 import vegabobo.languageselector.dao.AppInfoDb
+import vegabobo.languageselector.dao.RecordedLanguageStore
 import vegabobo.languageselector.service.UserServiceProvider
 
 @HiltViewModel
 class MainScreenVm @Inject constructor(
     val app: Application,
     appInfoDb: AppInfoDb,
+    private val recordedLanguageStore: RecordedLanguageStore,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenState())
     val uiState: StateFlow<MainScreenState> = _uiState.asStateFlow()
@@ -180,17 +182,14 @@ class MainScreenVm @Inject constructor(
 
     fun addAppToHistory(ai: AppInfo) {
         viewModelScope.launch(Dispatchers.IO) {
-            if (dao.findByPkg(ai.pkg) == null) {
-                dao.insert(ai.toAppInfoEntity())
-            }
-            dao.setLastSelected(ai.pkg, System.currentTimeMillis())
+            recordedLanguageStore.recordHistorySelection(ai.pkg, ai.name, System.currentTimeMillis())
             updateHistory()
         }
     }
 
     fun onClickClear() {
         viewModelScope.launch(Dispatchers.IO) {
-            dao.cleanLastSelectedAll()
+            recordedLanguageStore.clearAllHistory()
             updateHistory()
         }
     }

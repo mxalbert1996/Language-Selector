@@ -34,5 +34,10 @@ object Modules {
     @Provides
     fun provideAppInfoDb(
         app: Application,
-    ): AppInfoDb = Room.databaseBuilder(app, AppInfoDb::class.java, "app-info-db").build()
+    ): AppInfoDb = Room.databaseBuilder(app, AppInfoDb::class.java, "app-info-db")
+        .addMigrations(AppInfoDb.MIGRATION_1_2)
+        .build()
+
+    @Provides
+    fun provideAppInfoDao(appInfoDb: AppInfoDb) = appInfoDb.appInfoDao()
 }

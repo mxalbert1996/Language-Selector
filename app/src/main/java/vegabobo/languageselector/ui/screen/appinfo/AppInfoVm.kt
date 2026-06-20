@@ -12,16 +12,20 @@ import android.provider.Settings
 import android.util.Log
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.accompanist.drawablepainter.DrawablePainter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import vegabobo.languageselector.BuildConfig
 import vegabobo.languageselector.LocaleManager
+import vegabobo.languageselector.dao.RecordedLanguageStore
 import vegabobo.languageselector.service.UserServiceProvider
 import vegabobo.languageselector.ui.screen.main.getAppIcon
 import vegabobo.languageselector.ui.screen.main.getLabel
@@ -34,6 +38,7 @@ object PrefConstants {
 class AppInfoVm @Inject constructor(
     val app: Application,
     val localeManager: LocaleManager,
+    private val recordedLanguageStore: RecordedLanguageStore,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AppInfoState())
     val uiState: StateFlow<AppInfoState> = _uiState.asStateFlow()
@@ -90,6 +95,13 @@ class AppInfoVm @Inject constructor(
             )
             updateCurrentLanguageState()
         }
+        viewModelScope.launch(Dispatchers.IO) {
+            recordedLanguageStore.recordLanguageSelection(
+                appInfo.packageName,
+                app.packageManager.getLabel(appInfo),
+                singleLocale.languageTag,
+            )
+        }
     }
 
     fun onClickSettings() {
@@ -112,6 +124,9 @@ class AppInfoVm @Inject constructor(
             setApplicationLocales(appInfo.packageName, LocaleList())
             updateCurrentLanguageState()
             _uiState.update { it.copy(currentLanguage = "") }
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            recordedLanguageStore.clearRecordedLanguage(appInfo.packageName)
         }
     }
 

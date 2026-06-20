@@ -17,7 +17,10 @@
     <string name="proceed">続行</string>
     <string name="pinned_ok">%1$s をピン留めしました</string>
     <string name="unpinned">%1$s のピン留めを解除しました</string>
-    <string name="about">About</string>
+    <string name="about">このアプリについて</string>
+    <string name="recorded_apps">記録済みアプリ</string>
+    <string name="no_recorded_apps">記録済みのアプリはまだありません</string>
+    <string name="no_recorded_apps_body">言語を設定したアプリがここに表示されます。</string>
     <string name="deps_libs">依存関係およびライブラリ:</string>
     <string name="version">Version %1$s (%2$s)</string>
     <string name="app">アプリケーション</string>
@@ -28,4 +31,6 @@
     <string name="warning">警告</string>
     <string name="warning_system_apps">システムアプリから言語を選択することは推奨されていません。続行しますか？</string>
     <string name="cancel">キャンセル</string>
+
+    <string name="search">アプリを検索</string>
 </resources>

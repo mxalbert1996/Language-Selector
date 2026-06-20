@@ -8,6 +8,7 @@ import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import android.util.Log
 import rikka.shizuku.Shizuku
+import vegabobo.languageselector.di.appSingletonEntryPoint
 import vegabobo.languageselector.service.UserServiceProvider
 import vegabobo.languageselector.ui.screen.appinfo.PrefConstants
 import vegabobo.languageselector.ui.screen.appinfo.SingleLocale
@@ -20,6 +21,9 @@ class QSTile : TileService() {
     private var isLoaded = false
     private val locales = mutableListOf<SingleLocale>()
     private lateinit var targetPackage: ApplicationInfo
+    private val recordedLanguageStore by lazy(LazyThreadSafetyMode.NONE) {
+        appSingletonEntryPoint(applicationContext).recordedLanguageStore()
+    }
 
     private fun getNextSingleLocale(localeList: LocaleList): SingleLocale {
         if (locales.isEmpty()) {
@@ -189,6 +193,15 @@ class QSTile : TileService() {
                     LocaleList(nextLocale.toLocale())
                 }
             setApplicationLocales(targetPackage.packageName, localeList)
+            if (nextLocale.languageTag.isEmpty()) {
+                recordedLanguageStore.clearRecordedLanguage(targetPackage.packageName)
+            } else {
+                recordedLanguageStore.recordLanguageSelection(
+                    targetPackage.packageName,
+                    packageManager.getLabel(targetPackage),
+                    nextLocale.languageTag,
+                )
+            }
             updateTile()
         }
     }

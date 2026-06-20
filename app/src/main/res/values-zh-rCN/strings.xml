@@ -17,14 +17,19 @@
     <string name="pinned_ok">%1$s 已置顶</string>
     <string name="unpinned">%1$s 取消置顶</string>
     <string name="about">关于</string>
+    <string name="recorded_apps">已记录的应用</string>
+    <string name="no_recorded_apps">还没有已记录的应用</string>
+    <string name="no_recorded_apps_body">已设置语言的应用会显示在这里。</string>
     <string name="deps_libs">依赖库信息:</string>
     <string name="version">版本 %1$s (%2$s)</string>
     <string name="app">应用</string>
     <string name="ghrepo">Github 仓库</string>
     <string name="view_source">查看源码</string>
-    <string name="loading">加载中...</string>
+    <string name="loading">加载中…</string>
     <string name="unavailable">不可用</string>
     <string name="warning">警告</string>
     <string name="warning_system_apps">不建议对系统应用选择语言,你确定?</string>
     <string name="cancel">取消</string>
+
+    <string name="search">搜索应用</string>
 </resources>

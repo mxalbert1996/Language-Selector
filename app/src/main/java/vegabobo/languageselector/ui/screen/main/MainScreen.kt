@@ -43,6 +43,7 @@ fun MainScreen(
     mainScreenVm: MainScreenVm = hiltViewModel(),
     navigateToAppScreen: (String) -> Unit,
     navigateToAbout: () -> Unit,
+    navigateToRecordedApps: () -> Unit,
 ) {
     val uiState by mainScreenVm.uiState.collectAsState()
     val sb = remember { SnackbarHostState() }
@@ -123,12 +124,12 @@ fun MainScreen(
                                 SearchBarActions(
                                     isDropdownVisible = uiState.isDropdownVisible,
                                     isShowingSystemApps = uiState.isShowSystemAppsHome,
-                                    onClickToggleDropdown = { mainScreenVm.toggleDropdown() },
-                                    onToggleDropdown = { mainScreenVm.toggleDropdown() },
-                                    onClickToggleSystemApps = {
-                                        mainScreenVm.toggleSystemAppsVisibility()
-                                    },
-                                    onClickAbout = { navigateToAbout() },
+                                    onClickToggleDropdown = mainScreenVm::toggleDropdown,
+                                    onToggleDropdown = mainScreenVm::toggleDropdown,
+                                    onClickToggleSystemApps =
+                                        mainScreenVm::toggleSystemAppsVisibility,
+                                    onClickRecordedApps = navigateToRecordedApps,
+                                    onClickAbout = navigateToAbout,
                                 )
                             }
                         },
@@ -170,10 +171,8 @@ fun MainScreen(
                             }
                             AppListItem(
                                 modifier = Modifier.padding(
-                                    start = 26.dp,
-                                    end = 26.dp,
-                                    top = 4.dp,
-                                    bottom = 4.dp,
+                                    horizontal = 26.dp,
+                                    vertical = 4.dp,
                                 ),
                                 app = thisApp,
                                 onClickApp = {

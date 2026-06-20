@@ -23,6 +23,7 @@ fun SearchBarActions(
     onClickToggleDropdown: () -> Unit,
     onToggleDropdown: () -> Unit,
     onClickToggleSystemApps: () -> Unit,
+    onClickRecordedApps: () -> Unit,
     onClickAbout: () -> Unit,
 ) {
     Box(
@@ -47,6 +48,13 @@ fun SearchBarActions(
                     )
                 },
                 onClick = { onClickToggleSystemApps() },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.recorded_apps)) },
+                onClick = {
+                    onClickRecordedApps()
+                    onClickToggleDropdown()
+                },
             )
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.about)) },

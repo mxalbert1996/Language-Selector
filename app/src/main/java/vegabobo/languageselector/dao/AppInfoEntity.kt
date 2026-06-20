@@ -12,4 +12,6 @@ data class AppInfoEntity(
     @ColumnInfo(name = "name") val name: String,
     // Last time user selected this app, history feature
     @ColumnInfo(name = "last_selected") val lastSelected: Long?,
+    // User-selected language tag for the app, if any
+    @ColumnInfo(name = "recorded_language_tag") val recordedLanguageTag: String?,
 )

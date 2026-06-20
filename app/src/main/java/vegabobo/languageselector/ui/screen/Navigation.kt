@@ -11,15 +11,18 @@ import androidx.navigation.navArgument
 import vegabobo.languageselector.ui.screen.Destinations.ABOUT
 import vegabobo.languageselector.ui.screen.Destinations.APP_INFO
 import vegabobo.languageselector.ui.screen.Destinations.HOME
+import vegabobo.languageselector.ui.screen.Destinations.RECORDED_APPS
 import vegabobo.languageselector.ui.screen.about.AboutScreen
 import vegabobo.languageselector.ui.screen.appinfo.AppInfoScreen
 import vegabobo.languageselector.ui.screen.main.MainScreen
+import vegabobo.languageselector.ui.screen.recordedapps.RecordedAppsScreen
 import vegabobo.languageselector.ui.theme.Transitions
 
 object Destinations {
     const val HOME = "home"
     const val APP_INFO = "app_info"
     const val ABOUT = "about"
+    const val RECORDED_APPS = "recorded_apps"
 }
 
 @Composable
@@ -41,6 +44,7 @@ fun Navigation() {
             MainScreen(
                 navigateToAppScreen = { navController.navigate("$APP_INFO/$it") },
                 navigateToAbout = { navController.navigate(ABOUT) },
+                navigateToRecordedApps = { navController.navigate(RECORDED_APPS) },
             )
         }
 
@@ -49,11 +53,18 @@ fun Navigation() {
             arguments = listOf(navArgument("app_id") { type = NavType.StringType }),
         ) { backStackEntry ->
             val appId = backStackEntry.arguments?.getString("app_id") ?: return@composable
-            AppInfoScreen(appId = appId, navigateBack = { navController.navigateUp() })
+            AppInfoScreen(appId = appId, navigateBack = navController::navigateUp)
+        }
+
+        composable(route = RECORDED_APPS) {
+            RecordedAppsScreen(
+                navigateBack = navController::navigateUp,
+                navigateToAppScreen = { navController.navigate("$APP_INFO/$it") },
+            )
         }
 
         composable(route = ABOUT) {
-            AboutScreen(navigateBack = { navController.navigateUp() })
+            AboutScreen(navigateBack = navController::navigateUp)
         }
     }
 }

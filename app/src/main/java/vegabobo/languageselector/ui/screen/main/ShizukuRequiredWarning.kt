@@ -17,9 +17,11 @@ fun ShizukuRequiredWarning(
     AlertDialog(
         onDismissRequest = {},
         confirmButton = {
-            TextButton(onClick = {
-                onClickContinue()
-            }) { Text(stringResource(id = R.string.proceed)) }
+            TextButton(
+                onClick = {
+                    onClickContinue()
+                },
+            ) { Text(stringResource(id = R.string.proceed)) }
         },
         icon = {
             Icon(

@@ -14,6 +14,7 @@ import rikka.shizuku.Shizuku
 import vegabobo.languageselector.service.RootUserService
 import vegabobo.languageselector.service.UserService
 import vegabobo.languageselector.service.UserServiceProvider
+import vegabobo.languageselector.sync.AppLanguageSyncCoordinator
 import vegabobo.languageselector.ui.screen.Navigation
 import vegabobo.languageselector.ui.screen.main.OperationMode
 import vegabobo.languageselector.ui.theme.LanguageSelector
@@ -33,9 +34,16 @@ object ShizukuArgs {
 class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListener {
 
     private val acRequestCode = 1
+    private var onConnectedListener: (() -> Unit)? = null
 
     private fun bindShizuku() {
         Shizuku.bindUserService(ShizukuArgs.userServiceArgs, UserServiceProvider.connection)
+    }
+
+    private fun triggerImmediateSync() {
+        UserServiceProvider.connection.runImmediateSyncOnce {
+            AppLanguageSyncCoordinator(applicationContext).syncImmediate()
+        }
     }
 
     private val REQUEST_PERMISSION_RESULT_LISTENER = this::onRequestPermissionResult
@@ -81,6 +89,11 @@ class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListe
                 }
             },
         )
+
+        onConnectedListener = {
+            triggerImmediateSync()
+        }
+        UserServiceProvider.addOnConnectedListener(onConnectedListener!!)
     }
 
     override fun onResume() {
@@ -96,6 +109,7 @@ class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListe
 
     override fun onDestroy() {
         Shizuku.removeRequestPermissionResultListener(REQUEST_PERMISSION_RESULT_LISTENER)
+        onConnectedListener?.let { UserServiceProvider.connection.removeOnConnectedListener(it) }
         RootReceivedListener.destroy()
         if (UserServiceProvider.isConnected()) {
             when (UserServiceProvider.opMode) {

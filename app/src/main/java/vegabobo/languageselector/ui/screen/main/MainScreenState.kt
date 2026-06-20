@@ -54,6 +54,7 @@ fun AppInfo.toAppInfoEntity(): AppInfoEntity = AppInfoEntity(
     this.pkg,
     this.name,
     System.currentTimeMillis(),
+    null,
 )
 
 fun PackageManager.getLabel(applicationInfo: ApplicationInfo): String = applicationInfo.loadLabel(

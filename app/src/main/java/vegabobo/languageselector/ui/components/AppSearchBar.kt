@@ -126,10 +126,8 @@ fun AppSearchBar(
                     }
                     AppListItem(
                         modifier = Modifier.padding(
-                            start = 23.dp,
-                            end = 23.dp,
-                            top = 4.dp,
-                            bottom = 4.dp,
+                            horizontal = 23.dp,
+                            vertical = 4.dp,
                         ),
                         app = app,
                         onClickApp = { onClickApp(app) },

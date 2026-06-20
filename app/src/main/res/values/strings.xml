@@ -17,6 +17,9 @@
     <string name="pinned_ok">%1$s pinned</string>
     <string name="unpinned">%1$s unpinned</string>
     <string name="about">About</string>
+    <string name="recorded_apps">Recorded apps</string>
+    <string name="no_recorded_apps">No recorded apps yet</string>
+    <string name="no_recorded_apps_body">Apps you set a language for will appear here.</string>
     <string name="deps_libs">Dependencies and libraries:</string>
     <string name="version">version %1$s (%2$s)</string>
     <string name="app">Application</string>
