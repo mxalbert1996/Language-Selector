@@ -12,7 +12,9 @@ public interface ILocaleManager extends IInterface {
 
     // U
     void setApplicationLocales(String packageName, int userId, LocaleList locales, boolean fromDelegate);
+
     LocaleList getApplicationLocales(String packageName, int userId);
+
     LocaleList getSystemLocales();
 
     abstract class Stub extends Binder implements ILocaleManager {

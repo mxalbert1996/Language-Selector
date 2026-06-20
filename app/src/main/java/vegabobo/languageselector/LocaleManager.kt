@@ -1,9 +1,9 @@
 package vegabobo.languageselector
 
+import java.util.Locale
 import vegabobo.languageselector.ui.screen.appinfo.LocaleRegion
 import vegabobo.languageselector.ui.screen.appinfo.SingleLocale
 import vegabobo.languageselector.ui.screen.appinfo.capDisplayName
-import java.util.Locale
 
 class LocaleManager {
 
@@ -30,5 +30,4 @@ class LocaleManager {
         localeList.addAll(localeListMap.values)
         localeList.sortBy { it.language }
     }
-
 }

@@ -38,6 +38,8 @@ interface AppInfoDao {
     @Query("UPDATE appinfoentity SET last_selected = :lastSelected WHERE pkg = :pkg")
     fun setLastSelected(pkg: String, lastSelected: Long)
 
-    @Query("SELECT * FROM appinfoentity WHERE last_selected IS NOT NULL ORDER BY last_selected DESC")
+    @Query(
+        "SELECT * FROM appinfoentity WHERE last_selected IS NOT NULL ORDER BY last_selected DESC",
+    )
     fun getHistory(): List<AppInfoEntity>
 }

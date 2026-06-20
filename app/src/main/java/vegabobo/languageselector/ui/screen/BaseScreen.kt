@@ -29,16 +29,18 @@ fun BaseScreen(
 ) {
     val defScrollBehavior = topBar != null || title?.isNotEmpty() == true
     val scrollBehavior =
-        if (defScrollBehavior)
+        if (defScrollBehavior) {
             TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
-        else
+        } else {
             null
+        }
 
     val sbMod =
-        if (defScrollBehavior)
+        if (defScrollBehavior) {
             Modifier.nestedScroll(scrollBehavior!!.nestedScrollConnection)
-        else
+        } else {
             Modifier
+        }
 
     Scaffold(
         modifier = Modifier
@@ -54,10 +56,10 @@ fun BaseScreen(
                     scrollBehavior = scrollBehavior,
                     navigationIcon = { navIcon?.invoke() },
                     title = { Text(title) },
-                    actions = { actions(this) }
+                    actions = { actions(this) },
                 )
             }
         },
-        content = { content(it) }
+        content = { content(it) },
     )
 }

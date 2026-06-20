@@ -6,16 +6,14 @@ import java.util.Locale
 
 data class LocaleRegion(
     val language: String,
-    val locales: ArrayList<SingleLocale>
+    val locales: ArrayList<SingleLocale>,
 )
 
 data class SingleLocale(
     val name: String,
-    val languageTag: String
+    val languageTag: String,
 ) {
-    fun toLocale(): Locale {
-        return Locale.forLanguageTag(languageTag)
-    }
+    fun toLocale(): Locale = Locale.forLanguageTag(languageTag)
 }
 
 data class AppInfoState(

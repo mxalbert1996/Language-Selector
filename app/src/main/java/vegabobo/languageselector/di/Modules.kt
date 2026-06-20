@@ -8,10 +8,10 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 import vegabobo.languageselector.BuildConfig
 import vegabobo.languageselector.LocaleManager
 import vegabobo.languageselector.dao.AppInfoDb
-import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module
@@ -19,19 +19,20 @@ object Modules {
 
     @Singleton
     @Provides
-    fun provideLocaleManager(): LocaleManager {
-        return LocaleManager()
-    }
+    fun provideLocaleManager(): LocaleManager = LocaleManager()
 
     @Singleton
     @Provides
-    fun provideSharedPreferences(app: Application): SharedPreferences {
-        return app.getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE)
-    }
+    fun provideSharedPreferences(
+        app: Application,
+    ): SharedPreferences = app.getSharedPreferences(
+        BuildConfig.APPLICATION_ID,
+        Context.MODE_PRIVATE,
+    )
 
     @Singleton
     @Provides
-    fun provideAppInfoDb(app: Application): AppInfoDb {
-        return Room.databaseBuilder(app, AppInfoDb::class.java, "app-info-db").build()
-    }
+    fun provideAppInfoDb(
+        app: Application,
+    ): AppInfoDb = Room.databaseBuilder(app, AppInfoDb::class.java, "app-info-db").build()
 }

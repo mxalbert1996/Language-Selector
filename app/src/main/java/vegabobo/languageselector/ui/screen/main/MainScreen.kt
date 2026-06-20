@@ -49,7 +49,7 @@ fun MainScreen(
                 SnackBarDisplay.MOVED_TO_TOP -> {
                     val r = sb.showSnackbar(
                         message = "Modified app has been moved up",
-                        actionLabel = "Navigate"
+                        actionLabel = "Navigate",
                     )
                     if (r == SnackbarResult.ActionPerformed) {
                         val i =
@@ -57,11 +57,10 @@ fun MainScreen(
                         lazyListState.animateScrollToItem(i)
                     }
                 }
-
                 SnackBarDisplay.MOVED_TO_BOTTOM -> {
                     val r = sb.showSnackbar(
                         message = "Unmodified has been moved down",
-                        actionLabel = "Navigate"
+                        actionLabel = "Navigate",
                     )
                     if (r == SnackbarResult.ActionPerformed) {
                         val i =
@@ -69,22 +68,22 @@ fun MainScreen(
                         lazyListState.animateScrollToItem(i)
                     }
                 }
-
                 else -> {}
             }
             mainScreenVm.resetSnackBarDisplay()
         }
     }
     BaseScreen(snackBarHost = sb) {
-        if (uiState.isLoading)
+        if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize()) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
-        else {
+        } else {
             Box(
                 Modifier
                     .fillMaxSize()
-                    .semantics { isTraversalGroup = true }) {
+                    .semantics { isTraversalGroup = true },
+            ) {
                 AppSearchBar(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
@@ -92,7 +91,10 @@ fun MainScreen(
                     placeholder = stringResource(R.string.search),
                     onUpdatedValue = { mainScreenVm.onSearchTextFieldChange(it) },
                     query = uiState.searchTextFieldValue,
-                    onClickApp = { mainScreenVm.onClickApp(it); navigateToAppScreen(it.pkg) },
+                    onClickApp = {
+                        mainScreenVm.onClickApp(it)
+                        navigateToAppScreen(it.pkg)
+                    },
                     history = uiState.history,
                     apps = uiState.listOfApps,
                     isExpanded = uiState.isExpanded,
@@ -101,16 +103,20 @@ fun MainScreen(
                     onSelectedLabelsChange = { mainScreenVm.onSelectedLabelChange(it) },
                     onClickClear = { mainScreenVm.onClickClear() },
                     actions = {
-                        if (!uiState.isExpanded)
+                        if (!uiState.isExpanded) {
                             SearchBarActions(
                                 isDropdownVisible = uiState.isDropdownVisible,
                                 isShowingSystemApps = uiState.isShowSystemAppsHome,
                                 onClickToggleDropdown = { mainScreenVm.toggleDropdown() },
                                 onToggleDropdown = { mainScreenVm.toggleDropdown() },
-                                onClickToggleSystemApps = { mainScreenVm.toggleSystemAppsVisibility() },
-                                onClickAbout = { navigateToAbout() }
+                                onClickToggleSystemApps = {
+                                    mainScreenVm.toggleSystemAppsVisibility()
+                                },
+                                onClickAbout = { navigateToAbout() },
                             )
-                    })
+                        }
+                    },
+                )
 
                 if (uiState.operationMode == OperationMode.NONE) {
                     ShizukuRequiredWarning { mainScreenVm.onClickProceedShizuku() }
@@ -118,31 +124,35 @@ fun MainScreen(
 
                 LazyColumn(
                     state = lazyListState,
-                    modifier = Modifier.semantics { traversalIndex = 1f }
+                    modifier = Modifier.semantics { traversalIndex = 1f },
                 ) {
                     item {
                         Spacer(
                             Modifier
                                 .statusBarsPadding()
-                                .padding(top = 72.dp) /* 64 + 10 */
+                                .padding(top = 72.dp),
+                            /* 64 + 10 */
                         )
                     }
                     items(uiState.listOfApps.size) {
                         val thisApp = uiState.listOfApps[it]
-                        if (!uiState.isShowSystemAppsHome && thisApp.isSystemApp() && !thisApp.isModified())
+                        if (!uiState.isShowSystemAppsHome && thisApp.isSystemApp() &&
+                            !thisApp.isModified()
+                        ) {
                             return@items
+                        }
                         AppListItem(
                             modifier = Modifier.padding(
                                 start = 26.dp,
                                 end = 26.dp,
                                 top = 4.dp,
-                                bottom = 4.dp
+                                bottom = 4.dp,
                             ),
                             app = thisApp,
                             onClickApp = {
                                 mainScreenVm.onClickApp(thisApp)
                                 navigateToAppScreen(it)
-                            }
+                            },
                         )
                     }
                 }

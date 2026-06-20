@@ -15,7 +15,6 @@ import vegabobo.languageselector.ui.screen.appinfo.capDisplayName
 import vegabobo.languageselector.ui.screen.appinfo.parseSetLangs
 import vegabobo.languageselector.ui.screen.main.getLabel
 
-
 class QSTile : TileService() {
 
     private var isLoaded = false
@@ -23,10 +22,14 @@ class QSTile : TileService() {
     private lateinit var targetPackage: ApplicationInfo
 
     private fun getNextSingleLocale(localeList: LocaleList): SingleLocale {
-        if (locales.isEmpty())
-            throw Exception("getNextSingleLocale() should be not called with empty MutableList<SingleLocale> locales")
-        if (localeList.isEmpty)
+        if (locales.isEmpty()) {
+            throw Exception(
+                "getNextSingleLocale() should be not called with empty MutableList<SingleLocale> locales",
+            )
+        }
+        if (localeList.isEmpty) {
             return locales[1]
+        }
         for (i in 0 until locales.size) {
             val thisLocale = locales[i]
             if (localeList[0].toLanguageTag() == thisLocale.languageTag) {
@@ -52,7 +55,7 @@ class QSTile : TileService() {
             targetPackage =
                 packageManager.getApplicationInfo(
                     currentAppPackage,
-                    PackageManager.ApplicationInfoFlags.of(0)
+                    PackageManager.ApplicationInfoFlags.of(0),
                 )
             if (
                 (targetPackage.flags and ApplicationInfo.FLAG_SYSTEM) != 0 ||
@@ -99,37 +102,43 @@ class QSTile : TileService() {
     }
 
     override fun onTileAdded() {
-        if (BuildConfig.DEBUG)
+        if (BuildConfig.DEBUG) {
             Log.d(BuildConfig.APPLICATION_ID, "QSTile onTileAdded()")
+        }
         super.onTileAdded()
     }
 
     override fun onStartListening() {
-        if (BuildConfig.DEBUG)
+        if (BuildConfig.DEBUG) {
             Log.d(BuildConfig.APPLICATION_ID, "QSTile onStartListening()")
+        }
 
         super.onStartListening()
         setDisabledTile()
 
         try {
-            if (!UserServiceProvider.isConnected())
+            if (!UserServiceProvider.isConnected()) {
                 Shizuku.bindUserService(ShizukuArgs.userServiceArgs, UserServiceProvider.connection)
+            }
         } catch (e: Exception) {
             Log.e(
                 BuildConfig.APPLICATION_ID,
-                "Cannot bind UserService, non-fatal because it happened on QSTile.\n" + e.stackTraceToString()
+                "Cannot bind UserService, non-fatal because it happened on QSTile.\n" +
+                    e.stackTraceToString(),
             )
             return
         }
 
         loadLangs()
-        if (locales.isNotEmpty())
+        if (locales.isNotEmpty()) {
             updateTile()
+        }
     }
 
     override fun onStopListening() {
-        if (BuildConfig.DEBUG)
+        if (BuildConfig.DEBUG) {
             Log.d(BuildConfig.APPLICATION_ID, "QSTile onStopListening()")
+        }
         isLoaded = false
         locales.clear()
 
@@ -137,29 +146,33 @@ class QSTile : TileService() {
         run {
             try {
                 val service = UserServiceProvider.connection.SERVICE ?: return@run
-                if (BuildConfig.APPLICATION_ID == service.firstRunningTaskPackage)
+                if (BuildConfig.APPLICATION_ID == service.firstRunningTaskPackage) {
                     shouldUnbind = false
+                }
             } catch (e: Exception) {
                 //
             }
         }
-        if (UserServiceProvider.isConnected() && shouldUnbind)
+        if (UserServiceProvider.isConnected() && shouldUnbind) {
             Shizuku.unbindUserService(
                 ShizukuArgs.userServiceArgs,
                 UserServiceProvider.connection,
-                true
+                true,
             )
+        }
         super.onStopListening()
     }
 
     override fun onClick() {
-        if (BuildConfig.DEBUG)
+        if (BuildConfig.DEBUG) {
             Log.d(BuildConfig.APPLICATION_ID, "QSTile onClick()")
+        }
 
         super.onClick()
 
-        if (!this::targetPackage.isInitialized)
+        if (!this::targetPackage.isInitialized) {
             return
+        }
 
         UserServiceProvider.run {
             val currentLocale = getApplicationLocales(targetPackage.packageName)
@@ -170,18 +183,20 @@ class QSTile : TileService() {
             }
             val nextLocale = getNextSingleLocale(currentLocale)
             val localeList =
-                if (nextLocale.languageTag.isEmpty())
+                if (nextLocale.languageTag.isEmpty()) {
                     LocaleList()
-                else
+                } else {
                     LocaleList(nextLocale.toLocale())
+                }
             setApplicationLocales(targetPackage.packageName, localeList)
             updateTile()
         }
     }
 
     override fun onTileRemoved() {
-        if (BuildConfig.DEBUG)
+        if (BuildConfig.DEBUG) {
             Log.d(BuildConfig.APPLICATION_ID, "QSTile onTileRemoved()")
+        }
         super.onTileRemoved()
     }
 }

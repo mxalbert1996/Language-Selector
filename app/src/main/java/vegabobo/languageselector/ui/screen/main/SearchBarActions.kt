@@ -23,33 +23,37 @@ fun SearchBarActions(
     onClickToggleDropdown: () -> Unit,
     onToggleDropdown: () -> Unit,
     onClickToggleSystemApps: () -> Unit,
-    onClickAbout: () -> Unit
+    onClickAbout: () -> Unit,
 ) {
     Box(
-        modifier = Modifier.wrapContentSize(Alignment.Center)
+        modifier = Modifier.wrapContentSize(Alignment.Center),
     ) {
         ToolbarNormal(
-            onToggleDropdown = { onToggleDropdown() }
+            onToggleDropdown = { onToggleDropdown() },
         )
 
         DropdownMenu(
             expanded = isDropdownVisible,
-            onDismissRequest = { onClickToggleDropdown() }
+            onDismissRequest = { onClickToggleDropdown() },
         ) {
             DropdownMenuItem(
                 text = {
                     Text(
-                        text = if (isShowingSystemApps)
+                        text = if (isShowingSystemApps) {
                             stringResource(R.string.show_only_user_apps)
-                        else
+                        } else {
                             stringResource(R.string.show_system_apps)
+                        },
                     )
                 },
-                onClick = { onClickToggleSystemApps() }
+                onClick = { onClickToggleSystemApps() },
             )
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.about)) },
-                onClick = { onClickAbout(); onClickToggleDropdown() }
+                onClick = {
+                    onClickAbout()
+                    onClickToggleDropdown()
+                },
             )
         }
     }
@@ -63,7 +67,7 @@ fun ToolbarNormal(
         IconButton(onClick = { onToggleDropdown() }) {
             Icon(
                 imageVector = Icons.Outlined.MoreVert,
-                contentDescription = "More icon"
+                contentDescription = "More icon",
             )
         }
     }

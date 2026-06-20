@@ -34,13 +34,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import kotlinx.coroutines.launch
 import vegabobo.languageselector.R
 import vegabobo.languageselector.ui.components.BackButton
 import vegabobo.languageselector.ui.components.LocaleItemList
 import vegabobo.languageselector.ui.components.QuickTextButton
 import vegabobo.languageselector.ui.components.Title
 import vegabobo.languageselector.ui.screen.BaseScreen
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,7 +74,7 @@ fun AppInfoScreen(
         title = stringResource(R.string.app_language),
         navIcon = {
             BackButton { navigateBack() }
-        }
+        },
     ) {
         LazyColumn(
             state = listState,
@@ -87,27 +87,30 @@ fun AppInfoScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 18.dp, end = 18.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Image(
                         modifier = Modifier.size(84.dp),
                         bitmap = uiState.appIcon?.toBitmap()?.asImageBitmap()
                             ?: BitmapFactory.decodeResource(
-                                ctx.resources, R.drawable.icon_placeholder
+                                ctx.resources,
+                                R.drawable.icon_placeholder,
                             ).asImageBitmap(),
-                        contentDescription = "App icon"
+                        contentDescription = "App icon",
                     )
                     Column(
                         modifier = Modifier
                             .padding(18.dp)
-                            .weight(1f)
+                            .weight(1f),
                     ) {
                         Text(text = uiState.appName, fontSize = 22.sp, maxLines = 1)
                         Text(text = uiState.appPackage, fontSize = 14.sp, maxLines = 1)
                         Text(
-                            text = uiState.currentLanguage.ifEmpty { stringResource(R.string.system_default) },
+                            text = uiState.currentLanguage.ifEmpty {
+                                stringResource(R.string.system_default)
+                            },
                             fontSize = 14.sp,
-                            maxLines = 1
+                            maxLines = 1,
                         )
                     }
                 }
@@ -119,25 +122,25 @@ fun AppInfoScreen(
                         .fillMaxWidth()
                         .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     QuickTextButton(
                         modifier = Modifier.weight(1f),
                         onClick = { appInfoVm.onClickOpen() },
                         icon = Icons.AutoMirrored.Outlined.OpenInNew,
-                        text = stringResource(R.string.open)
+                        text = stringResource(R.string.open),
                     )
                     QuickTextButton(
                         modifier = Modifier.weight(1f),
                         onClick = { appInfoVm.onClickForceClose() },
                         icon = Icons.Outlined.Close,
-                        text = stringResource(R.string.close)
+                        text = stringResource(R.string.close),
                     )
                     QuickTextButton(
                         modifier = Modifier.weight(1f),
                         onClick = { appInfoVm.onClickSettings() },
                         icon = Icons.Outlined.Settings,
-                        text = stringResource(R.string.settings)
+                        text = stringResource(R.string.settings),
                     )
                 }
             }
@@ -157,7 +160,7 @@ fun AppInfoScreen(
                         onLongClick = {
                             pinToast(thisLangReg.name)
                             appInfoVm.onPinLang(thisLangReg)
-                        }
+                        },
                     )
                 }
             } else {
@@ -171,14 +174,16 @@ fun AppInfoScreen(
                             onLongClick = {
                                 unpinToast(thisLanguage.name)
                                 appInfoVm.onRemovePin(thisLanguage)
-                            }
+                            },
                         )
                     }
                 }
 
                 item { Title(stringResource(R.string.user_languages)) }
                 item {
-                    LocaleItemList(stringResource(R.string.system_default)) { appInfoVm.onClickResetLang() }
+                    LocaleItemList(stringResource(R.string.system_default)) {
+                        appInfoVm.onClickResetLang()
+                    }
                 }
                 items(uiState.listOfSuggestedLanguages.size) { index ->
                     val thisLanguage = uiState.listOfSuggestedLanguages[index]
@@ -188,7 +193,7 @@ fun AppInfoScreen(
                         onLongClick = {
                             pinToast(thisLanguage.name)
                             appInfoVm.onPinLang(thisLanguage)
-                        }
+                        },
                     )
                 }
 
@@ -205,7 +210,7 @@ fun AppInfoScreen(
         }
     }
 
-    if (uiState.selectedLanguage != -1)
+    if (uiState.selectedLanguage != -1) {
         BackHandler { appInfoVm.onBackWhenSelectedLang() }
-
+    }
 }

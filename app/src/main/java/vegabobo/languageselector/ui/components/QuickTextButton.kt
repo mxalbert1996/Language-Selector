@@ -23,7 +23,7 @@ fun QuickTextButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     icon: ImageVector,
-    text: String
+    text: String,
 ) {
     Column(
         modifier = Modifier
@@ -32,16 +32,15 @@ fun QuickTextButton(
             .padding(18.dp)
             .then(modifier),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
             modifier = Modifier.size(28.dp),
             imageVector = icon,
             contentDescription = text,
-            tint = MaterialTheme.colorScheme.primary
+            tint = MaterialTheme.colorScheme.primary,
         )
         Spacer(modifier = Modifier.padding(2.dp))
         Text(textAlign = TextAlign.Center, text = text, color = MaterialTheme.colorScheme.primary)
     }
-
 }

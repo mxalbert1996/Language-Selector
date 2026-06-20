@@ -7,12 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.navigationBars
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ipc.RootService
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,7 +20,7 @@ import vegabobo.languageselector.ui.screen.main.OperationMode
 import vegabobo.languageselector.ui.theme.LanguageSelector
 
 object ShizukuArgs {
-    val userServiceArgs =
+    val userServiceArgs: Shizuku.UserServiceArgs =
         Shizuku.UserServiceArgs(
             ComponentName(BuildConfig.APPLICATION_ID, UserService::class.java.name),
         )
@@ -34,7 +29,6 @@ object ShizukuArgs {
             .debuggable(BuildConfig.DEBUG)
             .version(BuildConfig.VERSION_CODE)
 }
-
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListener {
@@ -53,12 +47,15 @@ class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListe
     private val REQUEST_PERMISSION_RESULT_LISTENER = this::onRequestPermissionResult
 
     override fun onRequestPermissionResult(requestCode: Int, grantResult: Int) {
-        if (grantResult == PackageManager.PERMISSION_GRANTED)
+        if (grantResult == PackageManager.PERMISSION_GRANTED) {
             bindShizuku()
+        }
     }
 
-    private fun checkPermission(code: Int): Boolean {
-        return if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+    private fun checkPermission(code: Int): Boolean =
+        if (Shizuku.checkSelfPermission() ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
             bindShizuku()
             true
         } else if (Shizuku.shouldShowRequestPermissionRationale()) {
@@ -67,7 +64,6 @@ class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListe
             Shizuku.requestPermission(code)
             false
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,12 +77,14 @@ class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListe
             checkPermission(acRequestCode)
         }
 
-        RootReceivedListener.setListener(object : IRootListener {
-            override fun onRootReceived() {
-                val intent = Intent(application, RootUserService::class.java)
-                RootService.bind(intent, UserServiceProvider.connection)
-            }
-        })
+        RootReceivedListener.setListener(
+            object : IRootListener {
+                override fun onRootReceived() {
+                    val intent = Intent(application, RootUserService::class.java)
+                    RootService.bind(intent, UserServiceProvider.connection)
+                }
+            },
+        )
     }
 
     override fun onResume() {
@@ -109,13 +107,11 @@ class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListe
                 OperationMode.SHIZUKU -> Shizuku.unbindUserService(
                     ShizukuArgs.userServiceArgs,
                     UserServiceProvider.connection,
-                    true
+                    true,
                 )
-
                 else -> Log.d(BuildConfig.APPLICATION_ID, "UserService not bound.")
             }
         }
         super.onDestroy()
     }
-
 }

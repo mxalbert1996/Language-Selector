@@ -11,28 +11,27 @@ import android.os.LocaleList
 import android.provider.Settings
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import vegabobo.languageselector.LocaleManager
-import vegabobo.languageselector.service.UserServiceProvider
-import vegabobo.languageselector.ui.screen.main.getAppIcon
-import vegabobo.languageselector.ui.screen.main.getLabel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Locale
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import vegabobo.languageselector.BuildConfig
-import java.util.Locale
-import javax.inject.Inject
+import vegabobo.languageselector.LocaleManager
+import vegabobo.languageselector.service.UserServiceProvider
+import vegabobo.languageselector.ui.screen.main.getAppIcon
+import vegabobo.languageselector.ui.screen.main.getLabel
 
 object PrefConstants {
     const val PINNED_LOCALES = "pinned_locales"
 }
 
-
 @HiltViewModel
 class AppInfoVm @Inject constructor(
     val app: Application,
-    val localeManager: LocaleManager
+    val localeManager: LocaleManager,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AppInfoState())
     val uiState: StateFlow<AppInfoState> = _uiState.asStateFlow()
@@ -46,7 +45,7 @@ class AppInfoVm @Inject constructor(
             it.copy(
                 appName = app.packageManager.getLabel(appInfo),
                 appPackage = appInfo.packageName,
-                appIcon = app.packageManager.getAppIcon(appInfo)
+                appIcon = app.packageManager.getAppIcon(appInfo),
             )
         }
 
@@ -67,8 +66,9 @@ class AppInfoVm @Inject constructor(
     fun updateCurrentLanguageState() {
         UserServiceProvider.run {
             val currentLocale = getApplicationLocales(appInfo.packageName)
-            if (!currentLocale.isEmpty)
+            if (!currentLocale.isEmpty) {
                 _uiState.update { it.copy(currentLanguage = currentLocale.get(0).capDisplayName()) }
+            }
         }
     }
 
@@ -84,7 +84,7 @@ class AppInfoVm @Inject constructor(
         UserServiceProvider.run {
             setApplicationLocales(
                 appInfo.packageName,
-                LocaleList(singleLocale.toLocale())
+                LocaleList(singleLocale.toLocale()),
             )
             updateCurrentLanguageState()
         }
@@ -136,8 +136,9 @@ class AppInfoVm @Inject constructor(
         val set = sp.getStringSet(PrefConstants.PINNED_LOCALES, emptySet()) ?: emptySet()
         val newSet = mutableSetOf<String>()
         set.forEach {
-            if (!it.contains(singleLocale.languageTag))
+            if (!it.contains(singleLocale.languageTag)) {
                 newSet.add(it)
+            }
         }
         sp.edit().putStringSet(PrefConstants.PINNED_LOCALES, newSet).apply()
         updatePinnedLangsFromSP()
@@ -149,23 +150,20 @@ class AppInfoVm @Inject constructor(
         val pinnedLocaleList = set.parseSetLangs()
         _uiState.update { it.copy(listOfPinnedLanguages = pinnedLocaleList) }
     }
-
 }
 
-fun Locale.capDisplayName(): String {
-    return this.getDisplayName(this).replaceFirstChar { it.uppercaseChar() }
+fun Locale.capDisplayName(): String = this.getDisplayName(this).replaceFirstChar {
+    it.uppercaseChar()
 }
 
-fun Set<String>.parseSetLangs(): MutableList<SingleLocale> {
-    return this.mapNotNull {
-        try {
-            val stringLocale = it.split(",")
-            val name = stringLocale[0]
-            val tag = stringLocale[1]
-            SingleLocale(name, tag)
-        } catch (e: Exception) {
-            Log.e(BuildConfig.APPLICATION_ID, e.stackTraceToString())
-            null
-        }
-    }.toMutableList()
-}
+fun Set<String>.parseSetLangs(): MutableList<SingleLocale> = this.mapNotNull {
+    try {
+        val stringLocale = it.split(",")
+        val name = stringLocale[0]
+        val tag = stringLocale[1]
+        SingleLocale(name, tag)
+    } catch (e: Exception) {
+        Log.e(BuildConfig.APPLICATION_ID, e.stackTraceToString())
+        null
+    }
+}.toMutableList()

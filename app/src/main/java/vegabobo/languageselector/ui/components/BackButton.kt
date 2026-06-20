@@ -8,12 +8,12 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun BackButton(
-    onClick: () -> Unit
-){
+    onClick: () -> Unit,
+) {
     IconButton(onClick = { onClick() }) {
         Icon(
             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-            contentDescription = "Back arrow"
+            contentDescription = "Back arrow",
         )
     }
 }

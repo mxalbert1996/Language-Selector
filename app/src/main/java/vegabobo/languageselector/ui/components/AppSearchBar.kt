@@ -62,14 +62,14 @@ fun AppSearchBar(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = null
+                        contentDescription = null,
                     )
                 },
                 trailingIcon = {
                     Row { actions() }
                 },
                 query = query,
-                onQueryChange = { onUpdatedValue(it) }
+                onQueryChange = { onUpdatedValue(it) },
             )
         },
         expanded = isExpanded,
@@ -84,39 +84,40 @@ fun AppSearchBar(
                                 start = 23.dp,
                                 top = 8.dp,
                                 bottom = 8.dp,
-                                end = 8.dp
+                                end = 8.dp,
                             )
-                            .horizontalScroll(rememberScrollState())
+                            .horizontalScroll(rememberScrollState()),
                     ) {
                         FilterLabel(
                             title = "Show System",
                             onClick = {
                                 onSelectedLabelsChange(AppLabels.SYSTEM_APP)
                             },
-                            isSelected = selectedLabels.contains(AppLabels.SYSTEM_APP)
+                            isSelected = selectedLabels.contains(AppLabels.SYSTEM_APP),
                         )
                         Spacer(Modifier.padding(8.dp))
                         FilterLabel(
                             title = "Show Modified",
                             onClick = { onSelectedLabelsChange(AppLabels.MODIFIED) },
-                            isSelected = selectedLabels.contains(AppLabels.MODIFIED)
+                            isSelected = selectedLabels.contains(AppLabels.MODIFIED),
                         )
                     }
                 }
 
                 items(apps.size) {
                     val app = apps[it]
-                    if (filter(query, app, selectedLabels))
+                    if (filter(query, app, selectedLabels)) {
                         return@items
+                    }
                     AppListItem(
                         modifier = Modifier.padding(
                             start = 23.dp,
                             end = 23.dp,
                             top = 4.dp,
-                            bottom = 4.dp
+                            bottom = 4.dp,
                         ),
                         app = app,
-                        onClickApp = { onClickApp(app) }
+                        onClickApp = { onClickApp(app) },
                     )
                 }
             } else if (history.isNotEmpty()) {
@@ -124,7 +125,7 @@ fun AppSearchBar(
                     Row(
                         Modifier.padding(4.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                        horizontalArrangement = Arrangement.Center,
                     ) {
                         Text(
                             text = "History".uppercase(),
@@ -135,13 +136,13 @@ fun AppSearchBar(
                             modifier = modifier
                                 .padding(start = 18.dp)
                                 .padding(bottom = 8.dp)
-                                .padding(top = 8.dp)
+                                .padding(top = 8.dp),
                         )
                         Spacer(modifier = Modifier.weight(1f))
                         TextButton(onClick = { onClickClear() }) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
+                                horizontalArrangement = Arrangement.Center,
                             ) {
                                 Text(text = "Clear")
                             }
@@ -156,16 +157,15 @@ fun AppSearchBar(
                             start = 23.dp,
                             end = 23.dp,
                             top = 4.dp,
-                            bottom = 4.dp
+                            bottom = 4.dp,
                         ),
                         app = app,
-                        onClickApp = { onClickApp(app) }
+                        onClickApp = { onClickApp(app) },
                     )
                 }
                 item {
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Spacer(Modifier.weight(1f))
-
                     }
                 }
             } else {
@@ -176,25 +176,28 @@ fun AppSearchBar(
                             .padding(10.dp)
                             .alpha(0.4f),
                         text = "Type something to search",
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
                     )
                 }
             }
         }
     }
 
-    if (query.isNotBlank())
+    if (query.isNotBlank()) {
         BackHandler {
             onUpdatedValue("")
         }
+    }
 }
 
 fun filter(query: String, app: AppInfo, cLabels: List<AppLabels>): Boolean {
-    if (cLabels.contains(AppLabels.MODIFIED) && !app.labels.contains(AppLabels.MODIFIED))
+    if (cLabels.contains(AppLabels.MODIFIED) && !app.labels.contains(AppLabels.MODIFIED)) {
         return true
+    }
 
-    if (!cLabels.contains(AppLabels.SYSTEM_APP) && app.labels.contains(AppLabels.SYSTEM_APP))
+    if (!cLabels.contains(AppLabels.SYSTEM_APP) && app.labels.contains(AppLabels.SYSTEM_APP)) {
         return true
+    }
 
     val lQuery = query.lowercase()
     return !(app.pkg.lowercase().contains(lQuery) || app.name.lowercase().contains(lQuery))

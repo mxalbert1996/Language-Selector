@@ -29,19 +29,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
+import com.mikepenz.aboutlibraries.Libs
+import com.mikepenz.aboutlibraries.util.withContext
+import vegabobo.languageselector.BuildConfig
 import vegabobo.languageselector.R
 import vegabobo.languageselector.ui.components.BackButton
 import vegabobo.languageselector.ui.components.Title
 import vegabobo.languageselector.ui.screen.BaseScreen
 import vegabobo.languageselector.ui.screen.main.getAppIcon
-import com.mikepenz.aboutlibraries.Libs
-import com.mikepenz.aboutlibraries.util.withContext
-import vegabobo.languageselector.BuildConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
 ) {
     val libs = remember { mutableStateOf<Libs?>(null) }
     val context = LocalContext.current
@@ -51,32 +51,32 @@ fun AboutScreen(
 
     BaseScreen(
         title = stringResource(R.string.about),
-        navIcon = { BackButton { navigateBack() } }
+        navIcon = { BackButton { navigateBack() } },
     ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = it.calculateTopPadding())
+                .padding(top = it.calculateTopPadding()),
         ) {
             item {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Image(
                         modifier = Modifier.size(96.dp),
                         bitmap = context.packageManager
                             .getAppIcon(context.applicationInfo)
                             .toBitmap().asImageBitmap(),
-                        contentDescription = "App icon"
+                        contentDescription = "App icon",
                     )
                     Text(text = stringResource(R.string.app_name), fontSize = 22.sp)
                     Text(
                         stringResource(R.string.version).format(
                             BuildConfig.VERSION_NAME,
-                            BuildConfig.VERSION_CODE
-                        )
+                            BuildConfig.VERSION_CODE,
+                        ),
                     )
                 }
             }
@@ -84,7 +84,7 @@ fun AboutScreen(
                 Title(stringResource(id = R.string.app))
                 PreferenceItem(
                     title = stringResource(R.string.ghrepo),
-                    description = stringResource(R.string.view_source)
+                    description = stringResource(R.string.view_source),
                 ) {
                     uriHandler.openUri("https://github.com/VegaBobo/Language-Selector")
                 }
@@ -111,7 +111,6 @@ fun AboutScreen(
             item { Spacer(modifier = Modifier.padding(bottom = it.calculateBottomPadding())) }
         }
     }
-
 }
 
 @Composable
@@ -119,7 +118,7 @@ fun PreferenceItem(
     title: String,
     description: String,
     icon: ImageVector? = null,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -130,8 +129,8 @@ fun PreferenceItem(
                 start = 24.dp,
                 top = 16.dp,
                 bottom = 16.dp,
-                end = 16.dp
-            )
+                end = 16.dp,
+            ),
     ) {
         if (icon != null) {
             Icon(
@@ -143,12 +142,12 @@ fun PreferenceItem(
         Column {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
             )
             Spacer(Modifier.height(2.dp))
             Text(
                 text = description,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
         }
     }

@@ -12,20 +12,22 @@ import vegabobo.languageselector.R
 
 @Composable
 fun ShizukuRequiredWarning(
-    onClickContinue: () -> Unit
+    onClickContinue: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = {},
         confirmButton = {
-            TextButton(onClick = { onClickContinue() }) { Text(stringResource(id = R.string.proceed)) }
+            TextButton(onClick = {
+                onClickContinue()
+            }) { Text(stringResource(id = R.string.proceed)) }
         },
         icon = {
             Icon(
                 imageVector = Icons.Outlined.WarningAmber,
-                contentDescription = "Warning icon"
+                contentDescription = "Warning icon",
             )
         },
         title = { Text(stringResource(id = R.string.permissions_required)) },
-        text = { Text(stringResource(id = R.string.shizuku_required)) }
+        text = { Text(stringResource(id = R.string.shizuku_required)) },
     )
 }

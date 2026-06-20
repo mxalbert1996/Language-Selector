@@ -7,11 +7,15 @@ import androidx.compose.runtime.mutableStateListOf
 import vegabobo.languageselector.dao.AppInfoEntity
 
 enum class OperationMode {
-    NONE, SHIZUKU, ROOT
+    NONE,
+    SHIZUKU,
+    ROOT,
 }
 
 enum class SnackBarDisplay {
-    NONE, MOVED_TO_TOP, MOVED_TO_BOTTOM
+    NONE,
+    MOVED_TO_TOP,
+    MOVED_TO_BOTTOM,
 }
 
 data class MainScreenState(
@@ -27,31 +31,34 @@ data class MainScreenState(
     /* Search bar */
     val isExpanded: Boolean = false,
     val searchTextFieldValue: String = "",
-    val selectLabels: MutableList<AppLabels> = mutableStateListOf()
+    val selectLabels: MutableList<AppLabels> = mutableStateListOf(),
 )
 
 enum class AppLabels {
-    SYSTEM_APP, MODIFIED
+    SYSTEM_APP,
+    MODIFIED,
 }
 
 data class AppInfo(
     val icon: Drawable,
     val name: String,
     val pkg: String,
-    val labels: List<AppLabels> = emptyList()
+    val labels: List<AppLabels> = emptyList(),
 ) {
     fun isSystemApp() = labels.contains(AppLabels.SYSTEM_APP)
     fun isModified() = labels.contains(AppLabels.MODIFIED)
 }
 
-fun AppInfo.toAppInfoEntity(): AppInfoEntity {
-    return AppInfoEntity(this.pkg, this.name, System.currentTimeMillis())
-}
+fun AppInfo.toAppInfoEntity(): AppInfoEntity = AppInfoEntity(
+    this.pkg,
+    this.name,
+    System.currentTimeMillis(),
+)
 
-fun PackageManager.getLabel(applicationInfo: ApplicationInfo): String {
-    return applicationInfo.loadLabel(this).toString()
-}
+fun PackageManager.getLabel(applicationInfo: ApplicationInfo): String = applicationInfo.loadLabel(
+    this,
+).toString()
 
-fun PackageManager.getAppIcon(applicationInfo: ApplicationInfo): Drawable {
-    return this.getApplicationIcon(applicationInfo)
-}
+fun PackageManager.getAppIcon(applicationInfo: ApplicationInfo): Drawable = this.getApplicationIcon(
+    applicationInfo,
+)

@@ -1,6 +1,5 @@
 package vegabobo.languageselector
 
-
 interface IRootListener {
     fun onRootReceived()
 }

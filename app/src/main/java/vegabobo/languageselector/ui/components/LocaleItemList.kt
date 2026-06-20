@@ -18,22 +18,22 @@ import androidx.compose.ui.unit.sp
 fun LocaleItemList(
     itemText: String,
     onLongClick: () -> Unit = {},
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Box(
         modifier = Modifier
             .combinedClickable(
                 onClick = { onClick() },
-                onLongClick = { onLongClick() }
+                onLongClick = { onLongClick() },
             )
             .fillMaxWidth()
             .height(72.dp)
-            .padding(18.dp)
+            .padding(18.dp),
     ) {
         Text(
             modifier = Modifier.align(Alignment.CenterStart),
             text = itemText,
-            fontSize = 19.sp
+            fontSize = 19.sp,
         )
     }
 }

@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 fun FilterLabel(
     title: String,
     onClick: (Boolean) -> Unit,
-    isSelected: Boolean
+    isSelected: Boolean,
 ) {
     FilterChip(
         onClick = { onClick(isSelected) },
@@ -25,7 +25,7 @@ fun FilterLabel(
                 Icon(
                     imageVector = Icons.Filled.Done,
                     contentDescription = "Done icon",
-                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                    modifier = Modifier.size(FilterChipDefaults.IconSize),
                 )
             }
         } else {

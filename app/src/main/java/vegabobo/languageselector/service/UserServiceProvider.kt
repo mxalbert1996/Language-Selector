@@ -51,15 +51,15 @@ object UserServiceProvider {
             }
             val serviceUid = service().uid
             Log.d(tag, "IUserService available, uid: $serviceUid")
-            if(serviceUid == 0)
+            if (serviceUid == 0) {
                 opMode = OperationMode.ROOT
-            if(serviceUid <= 2000)
+            }
+            if (serviceUid <= 2000) {
                 opMode = OperationMode.SHIZUKU
+            }
             onConnected(service())
         }
     }
 
-    fun isConnected(): Boolean {
-        return connection.SERVICE != null
-    }
+    fun isConnected(): Boolean = connection.SERVICE != null
 }

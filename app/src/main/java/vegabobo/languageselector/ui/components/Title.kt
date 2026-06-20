@@ -19,6 +19,6 @@ fun Title(title: String, modifier: Modifier = Modifier) {
         modifier = modifier
             .padding(start = 18.dp)
             .padding(bottom = 8.dp)
-            .padding(top = 8.dp)
+            .padding(top = 8.dp),
     )
 }

@@ -24,20 +24,20 @@ fun Navigation() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = HOME
+        startDestination = HOME,
     ) {
         composable(
-            route = HOME
+            route = HOME,
         ) {
             MainScreen(
                 navigateToAppScreen = { navController.navigate("$APP_INFO/$it") },
-                navigateToAbout = { navController.navigate(ABOUT)}
+                navigateToAbout = { navController.navigate(ABOUT) },
             )
         }
 
         composable(
             route = "$APP_INFO/{app_id}",
-            arguments = listOf(navArgument("app_id") { type = NavType.StringType })
+            arguments = listOf(navArgument("app_id") { type = NavType.StringType }),
         ) { backStackEntry ->
             val appId = backStackEntry.arguments?.getString("app_id") ?: return@composable
             AppInfoScreen(appId = appId, navigateBack = { navController.navigateUp() })

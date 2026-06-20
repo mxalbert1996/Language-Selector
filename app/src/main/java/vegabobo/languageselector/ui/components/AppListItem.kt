@@ -28,30 +28,31 @@ import vegabobo.languageselector.ui.screen.main.AppInfo
 fun AppListItem(
     modifier: Modifier = Modifier,
     app: AppInfo,
-    onClickApp: (String) -> Unit
+    onClickApp: (String) -> Unit,
 ) {
     Row(
         modifier = Modifier
             .clickable { onClickApp(app.pkg) }
             .then(modifier),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Image(
             modifier = Modifier.size(32.dp),
             bitmap = app.icon.toBitmap().asImageBitmap(),
-            contentDescription = "app icon"
+            contentDescription = "app icon",
         )
         Spacer(modifier = Modifier.padding(8.dp))
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy((-4).dp)
+            verticalArrangement = Arrangement.spacedBy((-4).dp),
         ) {
             Text(text = app.name, fontSize = 18.sp, fontWeight = FontWeight.Medium, maxLines = 1)
             Text(text = app.pkg, fontSize = 12.sp, maxLines = 1)
             Row {
                 TextLabel(text = if (app.isSystemApp()) "System App" else "User App")
-                if (app.isModified())
+                if (app.isModified()) {
                     TextLabel(text = "Modified")
+                }
             }
         }
     }
@@ -63,14 +64,14 @@ fun TextLabel(text: String) {
         Box(
             Modifier
                 .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.onPrimary)
+                .background(MaterialTheme.colorScheme.onPrimary),
         ) {
             Text(
                 modifier = Modifier.padding(start = 4.dp, end = 4.dp, top = 2.dp, bottom = 2.dp),
                 text = text,
                 maxLines = 1,
                 lineHeight = 16.sp,
-                fontSize = 10.sp
+                fontSize = 10.sp,
             )
         }
     }
