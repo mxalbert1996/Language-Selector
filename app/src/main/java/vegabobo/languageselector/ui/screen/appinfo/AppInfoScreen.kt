@@ -1,6 +1,5 @@
 package vegabobo.languageselector.ui.screen.appinfo
 
-import android.graphics.BitmapFactory
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
@@ -24,11 +23,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -91,11 +93,9 @@ fun AppInfoScreen(
                 ) {
                     Image(
                         modifier = Modifier.size(84.dp),
-                        bitmap = uiState.appIcon?.toBitmap()?.asImageBitmap()
-                            ?: BitmapFactory.decodeResource(
-                                ctx.resources,
-                                R.drawable.icon_placeholder,
-                            ).asImageBitmap(),
+                        painter = uiState.appIcon?.toBitmap()?.asImageBitmap()?.let { bitmap ->
+                            remember(bitmap) { BitmapPainter(bitmap) }
+                        } ?: painterResource(R.drawable.icon_placeholder),
                         contentDescription = "App icon",
                     )
                     Column(

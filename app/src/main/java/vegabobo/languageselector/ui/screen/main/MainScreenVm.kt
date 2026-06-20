@@ -87,7 +87,7 @@ class MainScreenVm @Inject constructor(
                 loadOperationMode()
             }
             val packageList = getInstalledPackages().map { parseAppInfo(it) }
-            var sortedList =
+            val sortedList =
                 packageList.sortedBy { it.name.lowercase() }.sortedBy { !it.isModified() }
             _uiState.value.listOfApps.clear()
             _uiState.value.listOfApps.addAll(sortedList)
@@ -207,7 +207,11 @@ class MainScreenVm @Inject constructor(
             _uiState.update {
                 it.copy(
                     listOfApps = newList,
-                    snackBarDisplay = if (updatedAi.isModified()) SnackBarDisplay.MOVED_TO_TOP else SnackBarDisplay.MOVED_TO_BOTTOM,
+                    snackBarDisplay = if (updatedAi.isModified()) {
+                        SnackBarDisplay.MOVED_TO_TOP
+                    } else {
+                        SnackBarDisplay.MOVED_TO_BOTTOM
+                    },
                 )
             }
             return

@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.LocaleList
 import android.provider.Settings
 import android.util.Log
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
@@ -127,7 +128,7 @@ class AppInfoVm @Inject constructor(
         val set = sp.getStringSet(PrefConstants.PINNED_LOCALES, emptySet()) ?: emptySet()
         val mset = set.toMutableSet()
         mset.add("${singleLocale.name},${singleLocale.languageTag}")
-        sp.edit().putStringSet(PrefConstants.PINNED_LOCALES, mset).apply()
+        sp.edit { putStringSet(PrefConstants.PINNED_LOCALES, mset) }
         updatePinnedLangsFromSP()
     }
 
@@ -140,7 +141,7 @@ class AppInfoVm @Inject constructor(
                 newSet.add(it)
             }
         }
-        sp.edit().putStringSet(PrefConstants.PINNED_LOCALES, newSet).apply()
+        sp.edit { putStringSet(PrefConstants.PINNED_LOCALES, newSet) }
         updatePinnedLangsFromSP()
     }
 

@@ -1,6 +1,5 @@
 package vegabobo.languageselector.ui.screen.main
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,7 +30,7 @@ import vegabobo.languageselector.ui.components.AppListItem
 import vegabobo.languageselector.ui.components.AppSearchBar
 import vegabobo.languageselector.ui.screen.BaseScreen
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     mainScreenVm: MainScreenVm = hiltViewModel(),
