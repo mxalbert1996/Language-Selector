@@ -1,11 +1,10 @@
 plugins {
     alias(libs.plugins.com.android.library)
-    alias(libs.plugins.org.jetbrains.kotlin.android)
 }
 
 android {
     namespace = "com.example.hidden_api"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 33
@@ -27,5 +26,3 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 }
-
-dependencies {}

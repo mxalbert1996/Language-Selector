@@ -1,24 +1,24 @@
 [versions]
-aboutlibraries = "10.6.3"
+agp = "9.2.1"
+kotlin = "2.3.20"
+aboutlibraries = "14.2.1"
 libsu = "6.0.0"
-hiddenapibypass = "4.3"
-hilt = "2.51.1"
-hilt-navigation-compose = "1.2.0"
-material-icons-extended = "1.7.6"
-navigation-compose = "2.8.5"
-room-compiler = "2.6.1"
-shizuku = "13.1.1"
-com-android-application = "8.7.3"
-org-jetbrains-kotlin-android = "2.0.21"
-core-ktx = "1.15.0"
-lifecycle-runtime-ktx = "2.8.7"
-activity-compose = "1.9.3"
-compose-bom = "2024.12.01"
-com-android-library = "8.7.3"
-material = "1.12.0"
-ksp = "2.0.21-1.0.27"
+hiddenapibypass = "6.1"
+hilt = "2.59.2"
+hilt-navigation-compose = "1.3.0"
+material-icons-extended = "1.7.8"
+navigation-compose = "2.9.8"
+room-compiler = "2.8.4"
+shizuku = "13.1.5"
+core-ktx = "1.19.0"
+lifecycle-runtime-ktx = "2.11.0"
+activity-compose = "1.13.0"
+compose-bom = "2026.06.00"
+material = "1.14.0"
+ksp = "2.3.9"
 
 [libraries]
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlibraries" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt-navigation-compose" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle-runtime-ktx" }
@@ -46,10 +46,9 @@ material3 = { group = "androidx.compose.material3", name = "material3" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 [plugins]
-com-android-application = { id = "com.android.application", version.ref = "com-android-application" }
-org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "org-jetbrains-kotlin-android" }
-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "org-jetbrains-kotlin-android" }
-com-android-library = { id = "com.android.library", version.ref = "com-android-library" }
+com-android-application = { id = "com.android.application", version.ref = "agp" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+com-android-library = { id = "com.android.library", version.ref = "agp" }
 com-google-dagger-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 com-mikepenz-aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries" }
 com-google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

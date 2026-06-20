@@ -1,15 +1,22 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.com.android.application)
-    alias(libs.plugins.org.jetbrains.kotlin.android)
     alias(libs.plugins.com.google.dagger.hilt)
     alias(libs.plugins.com.mikepenz.aboutlibraries)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.com.google.devtools.ksp)
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_21
+    }
+}
+
 android {
     namespace = "vegabobo.languageselector"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "vegabobo.languageselector"
@@ -39,9 +46,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "21"
-    }
     buildFeatures {
         buildConfig = true
         compose = true
@@ -55,10 +59,14 @@ android {
 }
 
 aboutLibraries {
-    excludeFields = arrayOf("generated")
+    export {
+        excludeFields.addAll("generated")
+    }
 }
 
 dependencies {
+    compileOnly(project(":hidden-api"))
+
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
 
@@ -83,7 +91,9 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
 
-    implementation(libs.aboutlibraries.core)
+    implementation(libs.aboutlibraries.core) {
+        exclude("com.github.skydoves", "compose-stability-runtime")
+    }
 
     implementation(libs.shizuku.api)
     implementation(libs.shizuku.provider)
@@ -92,6 +102,4 @@ dependencies {
 
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
-
-    compileOnly(project(":hidden_api"))
 }
