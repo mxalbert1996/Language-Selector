@@ -33,4 +33,11 @@
     <string name="cancel">キャンセル</string>
 
     <string name="search">アプリを検索</string>
+    <string name="sync_notification_channel_name">アプリ言語の同期</string>
+    <string name="sync_notification_channel_description">アプリ言語の自動同期に関する通知</string>
+    <string name="sync_notification_title">アプリ言語の同期</string>
+    <string name="sync_notification_no_work">同期が完了しました: 更新対象の記録済みアプリはありません。</string>
+    <string name="sync_notification_completed">同期が完了しました: %1$d 件を確認し、%2$d 件を更新、%3$d 件を削除しました。</string>
+    <string name="sync_notification_no_privilege">同期をスキップしました: 特権バックエンドを利用できません。</string>
+    <string name="sync_notification_transient_failure">同期は一時的に失敗しました: %1$s。</string>
 </resources>

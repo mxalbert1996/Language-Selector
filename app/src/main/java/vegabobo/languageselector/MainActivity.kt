@@ -1,9 +1,12 @@
 package vegabobo.languageselector
 
+import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import dagger.hilt.android.AndroidEntryPoint
 import rikka.shizuku.Shizuku
@@ -15,6 +18,9 @@ import vegabobo.languageselector.ui.theme.LanguageSelector
 class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListener {
 
     private val acRequestCode = 1
+
+    private val notificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
     private val requestPermissionResultListener = this::onRequestPermissionResult
 
@@ -42,11 +48,25 @@ class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListe
             false
         }
 
+    private fun requestNotificationPermission() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS,
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             LanguageSelector { Navigation() }
+        }
+
+        if (savedInstanceState == null) {
+            requestNotificationPermission()
         }
 
         if (Shizuku.pingBinder() && savedInstanceState == null) {

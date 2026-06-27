@@ -32,4 +32,11 @@
     <string name="cancel">Cancel</string>
 
     <string name="search">Search apps</string>
+    <string name="sync_notification_channel_name">App language sync</string>
+    <string name="sync_notification_channel_description">Notifications about automatic app language synchronization</string>
+    <string name="sync_notification_title">App language sync</string>
+    <string name="sync_notification_no_work">Sync complete: no recorded apps to update.</string>
+    <string name="sync_notification_completed">Sync complete: %1$d checked, %2$d updated, %3$d removed.</string>
+    <string name="sync_notification_no_privilege">Sync skipped: privileged backend unavailable.</string>
+    <string name="sync_notification_transient_failure">Sync failed temporarily: %1$s.</string>
 </resources>

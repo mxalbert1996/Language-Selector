@@ -32,4 +32,11 @@
     <string name="cancel">取消</string>
 
     <string name="search">搜索应用</string>
+    <string name="sync_notification_channel_name">应用语言同步</string>
+    <string name="sync_notification_channel_description">有关应用语言自动同步的通知</string>
+    <string name="sync_notification_title">应用语言同步</string>
+    <string name="sync_notification_no_work">同步完成：没有已记录的应用需要更新。</string>
+    <string name="sync_notification_completed">同步完成：已检查 %1$d 个，已更新 %2$d 个，已移除 %3$d 个。</string>
+    <string name="sync_notification_no_privilege">已跳过同步：特权后端不可用。</string>
+    <string name="sync_notification_transient_failure">同步暂时失败：%1$s。</string>
 </resources>

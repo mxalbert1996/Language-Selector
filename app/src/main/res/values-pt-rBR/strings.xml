@@ -33,4 +33,11 @@
     <string name="cancel">Cancelar</string>
 
     <string name="search">Pesquisar apps</string>
+    <string name="sync_notification_channel_name">Sincronização do idioma dos apps</string>
+    <string name="sync_notification_channel_description">Notificações sobre a sincronização automática do idioma dos apps</string>
+    <string name="sync_notification_title">Sincronização do idioma dos apps</string>
+    <string name="sync_notification_no_work">Sincronização concluída: nenhum app registrado para atualizar.</string>
+    <string name="sync_notification_completed">Sincronização concluída: %1$d verificados, %2$d atualizados, %3$d removidos.</string>
+    <string name="sync_notification_no_privilege">Sincronização ignorada: backend privilegiado indisponível.</string>
+    <string name="sync_notification_transient_failure">A sincronização falhou temporariamente: %1$s.</string>
 </resources>
