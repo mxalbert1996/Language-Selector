@@ -68,7 +68,7 @@ fun SearchBarActions(
 }
 
 @Composable
-fun ToolbarNormal(
+private fun ToolbarNormal(
     onToggleDropdown: () -> Unit,
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {

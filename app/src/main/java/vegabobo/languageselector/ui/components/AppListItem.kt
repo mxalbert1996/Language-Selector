@@ -68,7 +68,7 @@ fun AppListItem(
 }
 
 @Composable
-fun TextLabel(text: String) {
+private fun TextLabel(text: String) {
     Box(Modifier.padding(top = 2.dp, end = 4.dp, bottom = 4.dp)) {
         Box(
             Modifier

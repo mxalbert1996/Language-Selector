@@ -15,8 +15,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import vegabobo.languageselector.capDisplayName
 import vegabobo.languageselector.dao.AppInfoDb
-import vegabobo.languageselector.ui.screen.appinfo.capDisplayName
 import vegabobo.languageselector.ui.screen.main.getAppIcon
 import vegabobo.languageselector.ui.screen.main.getLabel
 

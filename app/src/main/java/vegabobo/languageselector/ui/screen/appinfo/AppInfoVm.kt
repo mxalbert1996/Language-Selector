@@ -9,14 +9,13 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.LocaleList
 import android.provider.Settings
-import android.util.Log
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.accompanist.drawablepainter.DrawablePainter
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.Locale
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,9 +23,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import vegabobo.languageselector.BuildConfig
+import vegabobo.languageselector.IUserService
 import vegabobo.languageselector.LocaleManager
+import vegabobo.languageselector.capDisplayName
 import vegabobo.languageselector.dao.RecordedLanguageStore
-import vegabobo.languageselector.service.UserServiceProvider
+import vegabobo.languageselector.parseLocales
+import vegabobo.languageselector.service.PrivilegedAcquisitionResult
+import vegabobo.languageselector.service.PrivilegedServiceLease
+import vegabobo.languageselector.service.PrivilegedServiceManager
 import vegabobo.languageselector.ui.screen.main.getAppIcon
 import vegabobo.languageselector.ui.screen.main.getLabel
 
@@ -36,18 +40,22 @@ object PrefConstants {
 
 @HiltViewModel
 class AppInfoVm @Inject constructor(
-    val app: Application,
-    val localeManager: LocaleManager,
+    private val app: Application,
+    private val localeManager: LocaleManager,
     private val recordedLanguageStore: RecordedLanguageStore,
+    private val appCoroutineScope: CoroutineScope,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AppInfoState())
     val uiState: StateFlow<AppInfoState> = _uiState.asStateFlow()
 
-    lateinit var appInfo: ApplicationInfo
+    private lateinit var appInfo: ApplicationInfo
+    private var heldLease: PrivilegedServiceLease? = null
 
     fun initFromAppId(appId: String) {
-        appInfo =
-            app.packageManager.getApplicationInfo(appId, PackageManager.ApplicationInfoFlags.of(0))
+        appInfo = app.packageManager.getApplicationInfo(
+            appId,
+            PackageManager.ApplicationInfoFlags.of(0),
+        )
         _uiState.update {
             it.copy(
                 appName = app.packageManager.getLabel(appInfo),
@@ -56,25 +64,35 @@ class AppInfoVm @Inject constructor(
             )
         }
 
-        UserServiceProvider.run {
-            _uiState.value.listOfSuggestedLanguages.clear()
-            for (locale in 0 until systemLocales.size()) {
-                val thisLocale = systemLocales[locale]
-                val thisLLI =
-                    SingleLocale(thisLocale.capDisplayName(), thisLocale.toLanguageTag())
-                _uiState.value.listOfSuggestedLanguages.add(thisLLI)
-                updateCurrentLanguageState()
+        viewModelScope.launch(Dispatchers.IO) {
+            ensureHeldLease()?.let { service ->
+                _uiState.value.listOfSuggestedLanguages.clear()
+                for (i in 0 until service.systemLocales.size()) {
+                    val thisLocale = service.systemLocales[i]
+                    val thisLLI = SingleLocale(
+                        thisLocale.capDisplayName(),
+                        thisLocale.toLanguageTag(),
+                    )
+                    _uiState.value.listOfSuggestedLanguages.add(thisLLI)
+                    updateCurrentLanguageState()
+                }
             }
         }
 
         _uiState.update { it.copy(listOfAllLanguages = localeManager.localeList) }
     }
 
-    fun updateCurrentLanguageState() {
-        UserServiceProvider.run {
-            val currentLocale = getApplicationLocales(appInfo.packageName)
-            if (!currentLocale.isEmpty) {
-                _uiState.update { it.copy(currentLanguage = currentLocale.get(0).capDisplayName()) }
+    private fun updateCurrentLanguageState() {
+        viewModelScope.launch(Dispatchers.IO) {
+            ensureHeldLease()?.let { service ->
+                val currentLocale = service.getApplicationLocales(appInfo.packageName)
+                if (!currentLocale.isEmpty) {
+                    _uiState.update {
+                        it.copy(
+                            currentLanguage = currentLocale.get(0).capDisplayName(),
+                        )
+                    }
+                }
             }
         }
     }
@@ -88,19 +106,22 @@ class AppInfoVm @Inject constructor(
     }
 
     fun onClickLocale(singleLocale: SingleLocale) {
-        UserServiceProvider.run {
-            setApplicationLocales(
-                appInfo.packageName,
-                LocaleList(singleLocale.toLocale()),
-            )
-            updateCurrentLanguageState()
-        }
         viewModelScope.launch(Dispatchers.IO) {
-            recordedLanguageStore.recordLanguageSelection(
-                appInfo.packageName,
-                app.packageManager.getLabel(appInfo),
-                singleLocale.languageTag,
-            )
+            val ok = ensureHeldLease()?.let { service ->
+                service.setApplicationLocales(
+                    appInfo.packageName,
+                    LocaleList(singleLocale.toLocale()),
+                )
+                updateCurrentLanguageState()
+                true
+            } ?: false
+            if (ok) {
+                recordedLanguageStore.recordLanguageSelection(
+                    appInfo.packageName,
+                    app.packageManager.getLabel(appInfo),
+                    singleLocale.languageTag,
+                )
+            }
         }
     }
 
@@ -120,23 +141,45 @@ class AppInfoVm @Inject constructor(
     }
 
     fun onClickResetLang() {
-        UserServiceProvider.run {
-            setApplicationLocales(appInfo.packageName, LocaleList())
-            updateCurrentLanguageState()
-            _uiState.update { it.copy(currentLanguage = "") }
-        }
         viewModelScope.launch(Dispatchers.IO) {
-            recordedLanguageStore.clearRecordedLanguage(appInfo.packageName)
+            val ok = ensureHeldLease()?.let { service ->
+                service.setApplicationLocales(appInfo.packageName, LocaleList())
+                updateCurrentLanguageState()
+                _uiState.update { it.copy(currentLanguage = "") }
+                true
+            } ?: false
+            if (ok) recordedLanguageStore.clearRecordedLanguage(appInfo.packageName)
         }
     }
 
     fun onClickForceClose() {
-        UserServiceProvider.run {
-            forceStopPackage(appInfo.packageName)
+        viewModelScope.launch(Dispatchers.IO) {
+            ensureHeldLease()?.forceStopPackage(appInfo.packageName)
         }
     }
 
-    fun getSp(): SharedPreferences =
+    private suspend fun ensureHeldLease(): IUserService? {
+        heldLease?.service?.takeIf { it.asBinder().isBinderAlive }?.let { return it }
+        releaseHeldLease()
+        return when (val acquired = PrivilegedServiceManager.acquireLease(app)) {
+            is PrivilegedAcquisitionResult.Acquired ->
+                acquired.lease.also { heldLease = it }.service
+            else -> null
+        }
+    }
+
+    private suspend fun releaseHeldLease() {
+        heldLease?.release()
+        heldLease = null
+    }
+
+    override fun onCleared() {
+        appCoroutineScope.launch {
+            releaseHeldLease()
+        }
+    }
+
+    private fun getSp(): SharedPreferences =
         app.getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE)
 
     fun onPinLang(singleLocale: SingleLocale) {
@@ -164,23 +207,7 @@ class AppInfoVm @Inject constructor(
     fun updatePinnedLangsFromSP() {
         val sp = getSp()
         val set = sp.getStringSet(PrefConstants.PINNED_LOCALES, emptySet()) ?: return
-        val pinnedLocaleList = set.parseSetLangs()
+        val pinnedLocaleList = set.parseLocales()
         _uiState.update { it.copy(listOfPinnedLanguages = pinnedLocaleList) }
     }
 }
-
-fun Locale.capDisplayName(): String = this.getDisplayName(this).replaceFirstChar {
-    it.uppercaseChar()
-}
-
-fun Set<String>.parseSetLangs(): MutableList<SingleLocale> = this.mapNotNull {
-    try {
-        val stringLocale = it.split(",")
-        val name = stringLocale[0]
-        val tag = stringLocale[1]
-        SingleLocale(name, tag)
-    } catch (e: Exception) {
-        Log.e(BuildConfig.APPLICATION_ID, e.stackTraceToString())
-        null
-    }
-}.toMutableList()

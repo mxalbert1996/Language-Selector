@@ -111,7 +111,7 @@ fun AboutScreen(
 }
 
 @Composable
-fun PreferenceItem(
+private fun PreferenceItem(
     title: String,
     description: String,
     icon: ImageVector? = null,

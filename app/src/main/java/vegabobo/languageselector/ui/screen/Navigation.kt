@@ -18,7 +18,7 @@ import vegabobo.languageselector.ui.screen.main.MainScreen
 import vegabobo.languageselector.ui.screen.recordedapps.RecordedAppsScreen
 import vegabobo.languageselector.ui.theme.Transitions
 
-object Destinations {
+private object Destinations {
     const val HOME = "home"
     const val APP_INFO = "app_info"
     const val ABOUT = "about"

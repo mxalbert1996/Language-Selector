@@ -9,6 +9,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import vegabobo.languageselector.BuildConfig
 import vegabobo.languageselector.LocaleManager
 import vegabobo.languageselector.dao.AppInfoDb
@@ -16,6 +19,11 @@ import vegabobo.languageselector.dao.AppInfoDb
 @InstallIn(SingletonComponent::class)
 @Module
 object Modules {
+
+    @Singleton
+    @Provides
+    fun provideAppCoroutineScope(): CoroutineScope =
+        CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     @Singleton
     @Provides

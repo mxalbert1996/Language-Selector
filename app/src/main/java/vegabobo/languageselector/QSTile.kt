@@ -6,18 +6,22 @@ import android.content.pm.PackageManager
 import android.os.LocaleList
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
-import android.util.Log
-import rikka.shizuku.Shizuku
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import vegabobo.languageselector.di.appSingletonEntryPoint
-import vegabobo.languageselector.service.UserServiceProvider
+import vegabobo.languageselector.service.PrivilegedAcquisitionPolicy
+import vegabobo.languageselector.service.PrivilegedAcquisitionResult
+import vegabobo.languageselector.service.PrivilegedServiceManager
 import vegabobo.languageselector.ui.screen.appinfo.PrefConstants
 import vegabobo.languageselector.ui.screen.appinfo.SingleLocale
-import vegabobo.languageselector.ui.screen.appinfo.capDisplayName
-import vegabobo.languageselector.ui.screen.appinfo.parseSetLangs
 import vegabobo.languageselector.ui.screen.main.getLabel
 
 class QSTile : TileService() {
 
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var isLoaded = false
     private val locales = mutableListOf<SingleLocale>()
     private lateinit var targetPackage: ApplicationInfo
@@ -28,19 +32,19 @@ class QSTile : TileService() {
     private fun getNextSingleLocale(localeList: LocaleList): SingleLocale {
         if (locales.isEmpty()) {
             throw Exception(
-                "getNextSingleLocale() should be not called with empty MutableList<SingleLocale> locales",
+                "getNextSingleLocale() should not be called with empty locales",
             )
         }
-        if (localeList.isEmpty) {
-            return locales[1]
-        }
-        for (i in 0 until locales.size) {
-            val thisLocale = locales[i]
-            if (localeList[0].toLanguageTag() == thisLocale.languageTag) {
-                if (i == locales.size - 1) {
-                    return locales.first()
+        if (localeList.isEmpty) return locales[1]
+        for ((i, thisLocale) in locales.withIndex()) {
+            if (localeList[0].toLanguageTag() ==
+                thisLocale.languageTag
+            ) {
+                return if (i == locales.lastIndex) {
+                    locales.first()
+                } else {
+                    locales[i + 1]
                 }
-                return locales[i + 1]
             }
         }
         return locales.first()
@@ -54,162 +58,123 @@ class QSTile : TileService() {
     }
 
     private fun updateTile() {
-        UserServiceProvider.run {
-            val currentAppPackage = firstRunningTaskPackage
-            targetPackage =
-                packageManager.getApplicationInfo(
+        scope.launch {
+            val outcome = PrivilegedServiceManager.acquireLease(
+                applicationContext,
+                PrivilegedAcquisitionPolicy.AUTO,
+            )
+            if (outcome is PrivilegedAcquisitionResult.NoPrivilege ||
+                outcome is PrivilegedAcquisitionResult.TransientFailure
+            ) {
+                setDisabledTile()
+                return@launch
+            }
+            val lease = (outcome as PrivilegedAcquisitionResult.Acquired).lease
+            try {
+                val service = lease.service
+                val currentAppPackage = service.firstRunningTaskPackage
+                targetPackage = packageManager.getApplicationInfo(
                     currentAppPackage,
                     PackageManager.ApplicationInfoFlags.of(0),
                 )
-            if (
-                (targetPackage.flags and ApplicationInfo.FLAG_SYSTEM) != 0 ||
-                targetPackage.packageName == BuildConfig.APPLICATION_ID
-            ) {
-                // Prevent system apps and this app package to have locale replaced by QS toggle
-                setDisabledTile()
-                return@run
-            }
-            var isCustomLocale = false
-            val currentLocale =
-                try {
-                    val appLocales = getApplicationLocales(currentAppPackage)
+                if ((targetPackage.flags and ApplicationInfo.FLAG_SYSTEM) != 0 ||
+                    targetPackage.packageName == BuildConfig.APPLICATION_ID
+                ) {
+                    setDisabledTile()
+                    return@launch
+                }
+                var isCustomLocale = false
+                val currentLocale = try {
+                    val appLocales = service.getApplicationLocales(currentAppPackage)
                     if (!appLocales.isEmpty) {
                         isCustomLocale = true
                         appLocales[0].capDisplayName()
                     } else {
                         ""
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     ""
                 }.ifBlank { getString(R.string.system_default) }
-            qsTile.state = Tile.STATE_INACTIVE
-            qsTile.updateTile()
-
-            qsTile.label = currentLocale
-            qsTile.subtitle = packageManager.getLabel(targetPackage)
-            qsTile.state = if (isCustomLocale) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
-            qsTile.updateTile()
+                qsTile.state = Tile.STATE_INACTIVE
+                qsTile.updateTile()
+                qsTile.label = currentLocale
+                qsTile.subtitle = packageManager.getLabel(targetPackage)
+                qsTile.state = if (isCustomLocale) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+                qsTile.updateTile()
+            } finally {
+                lease.release()
+            }
         }
     }
 
-    fun loadLangs() {
+    private fun loadLangs() {
         if (!isLoaded) {
             val sp = getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE)
             val set = sp.getStringSet(PrefConstants.PINNED_LOCALES, emptySet()) ?: emptySet()
             if (set.isNotEmpty()) {
-                val systemDefaultLocale = SingleLocale("", "")
-                locales.add(systemDefaultLocale)
-                locales.addAll(set.parseSetLangs())
+                locales.add(SingleLocale("", ""))
+                locales.addAll(set.parseLocales())
             }
             isLoaded = true
         }
     }
 
-    override fun onTileAdded() {
-        if (BuildConfig.DEBUG) {
-            Log.d(BuildConfig.APPLICATION_ID, "QSTile onTileAdded()")
-        }
-        super.onTileAdded()
-    }
-
     override fun onStartListening() {
-        if (BuildConfig.DEBUG) {
-            Log.d(BuildConfig.APPLICATION_ID, "QSTile onStartListening()")
-        }
-
         super.onStartListening()
         setDisabledTile()
-
-        try {
-            if (!UserServiceProvider.isConnected()) {
-                Shizuku.bindUserService(ShizukuArgs.userServiceArgs, UserServiceProvider.connection)
-            }
-        } catch (e: Exception) {
-            Log.e(
-                BuildConfig.APPLICATION_ID,
-                "Cannot bind UserService, non-fatal because it happened on QSTile.\n" +
-                    e.stackTraceToString(),
-            )
-            return
-        }
-
         loadLangs()
-        if (locales.isNotEmpty()) {
-            updateTile()
-        }
+        if (locales.isNotEmpty()) updateTile()
     }
 
     override fun onStopListening() {
-        if (BuildConfig.DEBUG) {
-            Log.d(BuildConfig.APPLICATION_ID, "QSTile onStopListening()")
-        }
         isLoaded = false
         locales.clear()
-
-        var shouldUnbind = true
-        run {
-            try {
-                val service = UserServiceProvider.connection.SERVICE ?: return@run
-                if (BuildConfig.APPLICATION_ID == service.firstRunningTaskPackage) {
-                    shouldUnbind = false
-                }
-            } catch (e: Exception) {
-                //
-            }
-        }
-        if (UserServiceProvider.isConnected() && shouldUnbind) {
-            Shizuku.unbindUserService(
-                ShizukuArgs.userServiceArgs,
-                UserServiceProvider.connection,
-                true,
-            )
-        }
+        scope.cancel()
         super.onStopListening()
     }
 
     override fun onClick() {
-        if (BuildConfig.DEBUG) {
-            Log.d(BuildConfig.APPLICATION_ID, "QSTile onClick()")
-        }
-
         super.onClick()
-
-        if (!this::targetPackage.isInitialized) {
-            return
-        }
-
-        UserServiceProvider.run {
-            val currentLocale = getApplicationLocales(targetPackage.packageName)
+        if (!this::targetPackage.isInitialized) return
+        scope.launch {
+            val outcome = PrivilegedServiceManager.acquireLease(
+                applicationContext,
+                PrivilegedAcquisitionPolicy.AUTO,
+            )
+            if (outcome is PrivilegedAcquisitionResult.NoPrivilege ||
+                outcome is PrivilegedAcquisitionResult.TransientFailure
+            ) {
+                return@launch
+            }
+            val lease = (outcome as PrivilegedAcquisitionResult.Acquired).lease
             try {
-                Log.d(BuildConfig.APPLICATION_ID, "QSTile: ${currentLocale.isEmpty}")
-            } catch (e: Exception) {
-                Log.d(BuildConfig.APPLICATION_ID, e.stackTraceToString())
-            }
-            val nextLocale = getNextSingleLocale(currentLocale)
-            val localeList =
+                val service = lease.service
+                val currentLocale = service.getApplicationLocales(targetPackage.packageName)
+                val nextLocale = getNextSingleLocale(currentLocale)
+                val localeList =
+                    if (nextLocale.languageTag.isEmpty()) {
+                        LocaleList()
+                    } else {
+                        LocaleList(
+                            nextLocale.toLocale(),
+                        )
+                    }
+                service.setApplicationLocales(targetPackage.packageName, localeList)
                 if (nextLocale.languageTag.isEmpty()) {
-                    LocaleList()
+                    recordedLanguageStore.clearRecordedLanguage(
+                        targetPackage.packageName,
+                    )
                 } else {
-                    LocaleList(nextLocale.toLocale())
+                    recordedLanguageStore.recordLanguageSelection(
+                        targetPackage.packageName,
+                        packageManager.getLabel(targetPackage),
+                        nextLocale.languageTag,
+                    )
                 }
-            setApplicationLocales(targetPackage.packageName, localeList)
-            if (nextLocale.languageTag.isEmpty()) {
-                recordedLanguageStore.clearRecordedLanguage(targetPackage.packageName)
-            } else {
-                recordedLanguageStore.recordLanguageSelection(
-                    targetPackage.packageName,
-                    packageManager.getLabel(targetPackage),
-                    nextLocale.languageTag,
-                )
+                updateTile()
+            } finally {
+                lease.release()
             }
-            updateTile()
         }
-    }
-
-    override fun onTileRemoved() {
-        if (BuildConfig.DEBUG) {
-            Log.d(BuildConfig.APPLICATION_ID, "QSTile onTileRemoved()")
-        }
-        super.onTileRemoved()
     }
 }

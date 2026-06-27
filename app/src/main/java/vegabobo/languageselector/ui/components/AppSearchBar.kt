@@ -203,7 +203,7 @@ fun AppSearchBar(
     }
 }
 
-fun filter(query: String, app: AppInfo, cLabels: List<AppLabels>): Boolean {
+private fun filter(query: String, app: AppInfo, cLabels: List<AppLabels>): Boolean {
     if (cLabels.contains(AppLabels.MODIFIED) && !app.labels.contains(AppLabels.MODIFIED)) {
         return true
     }

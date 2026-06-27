@@ -3,7 +3,6 @@ package vegabobo.languageselector
 import java.util.Locale
 import vegabobo.languageselector.ui.screen.appinfo.LocaleRegion
 import vegabobo.languageselector.ui.screen.appinfo.SingleLocale
-import vegabobo.languageselector.ui.screen.appinfo.capDisplayName
 
 class LocaleManager {
 

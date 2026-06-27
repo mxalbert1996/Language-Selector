@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Handler
+import android.os.LocaleList
 import android.os.Looper
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -12,6 +13,7 @@ import com.google.accompanist.drawablepainter.DrawablePainter
 import com.topjohnwu.superuser.Shell
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,34 +22,38 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
 import vegabobo.languageselector.BuildConfig
-import vegabobo.languageselector.RootReceivedListener
+import vegabobo.languageselector.IUserService
 import vegabobo.languageselector.dao.AppInfoDb
 import vegabobo.languageselector.dao.RecordedLanguageStore
-import vegabobo.languageselector.service.UserServiceProvider
+import vegabobo.languageselector.logE
+import vegabobo.languageselector.service.PrivilegedAcquisitionResult
+import vegabobo.languageselector.service.PrivilegedServiceLease
+import vegabobo.languageselector.service.PrivilegedServiceManager
 
 @HiltViewModel
 class MainScreenVm @Inject constructor(
     val app: Application,
     appInfoDb: AppInfoDb,
     private val recordedLanguageStore: RecordedLanguageStore,
+    private val appCoroutineScope: CoroutineScope,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenState())
     val uiState: StateFlow<MainScreenState> = _uiState.asStateFlow()
     var lastSelectedApp: AppInfo? = null
     val dao = appInfoDb.appInfoDao()
+    private var heldLease: PrivilegedServiceLease? = null
 
     fun getIndexFromAppInfoItem(): Int = _uiState.value.listOfApps.indexOfFirst {
         it.pkg == lastSelectedApp?.pkg
     }
 
-    fun loadOperationMode() {
+    private fun loadOperationMode() {
         if (Shell.getShell().isAlive) {
             Shell.getShell().close()
         }
         Shell.getShell()
         if (Shell.isAppGrantedRoot() == true) {
             _uiState.update { it.copy(operationMode = OperationMode.ROOT) }
-            RootReceivedListener.onRootReceived()
             return
         }
 
@@ -65,15 +71,13 @@ class MainScreenVm @Inject constructor(
         fillListOfApps()
     }
 
-    fun parseAppInfo(a: ApplicationInfo): AppInfo {
+    private fun parseAppInfo(a: ApplicationInfo, languagePreferences: LocaleList?): AppInfo {
         val isSystemApp = (a.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-        val service = UserServiceProvider.getService()
-        val languagePreferences = service.getApplicationLocales(a.packageName)
         val labels = arrayListOf<AppLabels>()
         if (isSystemApp) {
             labels.add(AppLabels.SYSTEM_APP)
         }
-        if (!languagePreferences.isEmpty) {
+        if (languagePreferences?.isEmpty == false) {
             labels.add(AppLabels.MODIFIED)
         }
         return AppInfo(
@@ -84,12 +88,12 @@ class MainScreenVm @Inject constructor(
         )
     }
 
-    fun fillListOfApps() {
+    private fun fillListOfApps() {
         viewModelScope.launch(Dispatchers.IO) {
             if (_uiState.value.operationMode == OperationMode.NONE) {
                 loadOperationMode()
             }
-            val packageList = getInstalledPackages().map { parseAppInfo(it) }
+            val packageList = buildAppList()
             val sortedList =
                 packageList.sortedBy { it.name.lowercase() }.sortedBy { !it.isModified() }
             _uiState.value.listOfApps.clear()
@@ -98,15 +102,73 @@ class MainScreenVm @Inject constructor(
         }
     }
 
-    fun getInstalledPackages(): List<ApplicationInfo> = app.packageManager.getInstalledApplications(
-        PackageManager.ApplicationInfoFlags.of(0),
-    ).mapNotNull {
-        if (!it.enabled || BuildConfig.APPLICATION_ID == it.packageName) {
-            null
-        } else {
-            it
+    private suspend fun buildAppList(): List<AppInfo> {
+        val packages = getInstalledPackages()
+        val service = ensureHeldLease()
+        val localesByPackage = mutableMapOf<String, LocaleList?>()
+        if (service != null) {
+            packages.forEach { pkg ->
+                localesByPackage[pkg.packageName] = try {
+                    service.getApplicationLocales(pkg.packageName)
+                } catch (e: Throwable) {
+                    logE(e = e)
+                    null
+                }
+            }
+        }
+        return packages.map { pkg ->
+            parseAppInfo(
+                pkg,
+                localesByPackage[pkg.packageName],
+            )
         }
     }
+
+    private suspend fun fetchAppLocalesWithRetry(packageName: String): LocaleList? {
+        repeat(2) {
+            var localeList: LocaleList? = null
+            val service = ensureHeldLease()
+            val ok = if (service == null) {
+                false
+            } else {
+                try {
+                    localeList = service.getApplicationLocales(packageName)
+                    true
+                } catch (_: Throwable) {
+                    releaseHeldLease()
+                    false
+                }
+            }
+            if (ok) localeList?.let { return it }
+        }
+        return null
+    }
+
+    private suspend fun ensureHeldLease(): IUserService? {
+        heldLease?.service?.takeIf { it.asBinder().isBinderAlive }?.let { return it }
+        releaseHeldLease()
+        return when (val acquired = PrivilegedServiceManager.acquireLease(app)) {
+            is PrivilegedAcquisitionResult.Acquired ->
+                acquired.lease.also { heldLease = it }.service
+            else -> null
+        }
+    }
+
+    private suspend fun releaseHeldLease() {
+        heldLease?.release()
+        heldLease = null
+    }
+
+    private fun getInstalledPackages(): List<ApplicationInfo> =
+        app.packageManager.getInstalledApplications(
+            PackageManager.ApplicationInfoFlags.of(0),
+        ).mapNotNull {
+            if (!it.enabled || BuildConfig.APPLICATION_ID == it.packageName) {
+                null
+            } else {
+                it
+            }
+        }
 
     fun toggleDropdown() {
         val newDropdownVisibility = !uiState.value.isDropdownVisible
@@ -136,12 +198,14 @@ class MainScreenVm @Inject constructor(
     fun onSearchTextFieldChange(newText: String) {
         _uiState.update { it.copy(searchTextFieldValue = newText) }
 
-        if (workRunnable != null) {
-            handler.removeCallbacks(workRunnable!!)
+        workRunnable?.let {
+            handler.removeCallbacks(it)
         }
 
-        workRunnable = Runnable { searchQuery.value = newText }
-        handler.postDelayed(workRunnable!!, 1000)
+        Runnable { searchQuery.value = newText }.also {
+            workRunnable = it
+            handler.postDelayed(it, 1000)
+        }
     }
 
     fun onSearchExpandedChange() {
@@ -163,7 +227,7 @@ class MainScreenVm @Inject constructor(
         }
     }
 
-    fun updateHistory() {
+    private fun updateHistory() {
         viewModelScope.launch(Dispatchers.IO) {
             val appInfoList = dao.getHistory().map { it.pkg }
             val history = appInfoList.mapNotNull { pkg ->
@@ -180,9 +244,13 @@ class MainScreenVm @Inject constructor(
         }
     }
 
-    fun addAppToHistory(ai: AppInfo) {
+    private fun addAppToHistory(ai: AppInfo) {
         viewModelScope.launch(Dispatchers.IO) {
-            recordedLanguageStore.recordHistorySelection(ai.pkg, ai.name, System.currentTimeMillis())
+            recordedLanguageStore.recordHistorySelection(
+                ai.pkg,
+                ai.name,
+                System.currentTimeMillis(),
+            )
             updateHistory()
         }
     }
@@ -194,10 +262,11 @@ class MainScreenVm @Inject constructor(
         }
     }
 
-    fun reloadLastSelectedItem() {
-        if (lastSelectedApp == null) return
-        val pkg = app.packageManager.getApplicationInfo(lastSelectedApp!!.pkg, 0)
-        val updatedAi = parseAppInfo(pkg)
+    suspend fun reloadLastSelectedItem() {
+        val lastSelectedApp = lastSelectedApp ?: return
+        val pkg = app.packageManager.getApplicationInfo(lastSelectedApp.pkg, 0)
+        val languagePreferences = fetchAppLocalesWithRetry(pkg.packageName)
+        val updatedAi = parseAppInfo(pkg, languagePreferences)
         val apps = _uiState.value.listOfApps
         val idx = apps.indexOfFirst { it.pkg == updatedAi.pkg }
         if (idx != -1 && updatedAi.labels != apps[idx].labels) {
@@ -223,5 +292,11 @@ class MainScreenVm @Inject constructor(
     fun onClickApp(ai: AppInfo) {
         lastSelectedApp = ai
         addAppToHistory(ai)
+    }
+
+    override fun onCleared() {
+        appCoroutineScope.launch {
+            releaseHeldLease()
+        }
     }
 }
