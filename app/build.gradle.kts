@@ -22,9 +22,9 @@ android {
     defaultConfig {
         applicationId = "com.mxalbert.languageselector"
         minSdk = 33
-        targetSdk = 35
-        versionCode = 6
-        versionName = "2.0"
+        targetSdk = 37
+        versionCode = 7
+        versionName = "2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
