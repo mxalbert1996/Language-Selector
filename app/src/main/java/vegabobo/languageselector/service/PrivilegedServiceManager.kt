@@ -19,6 +19,35 @@ import vegabobo.languageselector.log
 
 enum class PrivilegedAcquisitionPolicy { AUTO, ROOT_ONLY, SHIZUKU_ONLY }
 
+enum class PreferredPrivilegedBackend {
+    NONE,
+    SHIZUKU,
+    ROOT,
+}
+
+data class PrivilegedBackendStatus(
+    val rootAvailable: Boolean,
+    val shizukuReachable: Boolean,
+    val shizukuPermissionGranted: Boolean,
+    val shouldShowShizukuRationale: Boolean,
+) {
+    val shizukuUsable: Boolean
+        get() = shizukuReachable && shizukuPermissionGranted
+
+    val preferredBackend: PreferredPrivilegedBackend
+        get() = when {
+            rootAvailable -> PreferredPrivilegedBackend.ROOT
+            shizukuUsable -> PreferredPrivilegedBackend.SHIZUKU
+            else -> PreferredPrivilegedBackend.NONE
+        }
+
+    val shouldRequestShizukuPermission: Boolean
+        get() = !rootAvailable &&
+            shizukuReachable &&
+            !shizukuPermissionGranted &&
+            !shouldShowShizukuRationale
+}
+
 class PrivilegedServiceLease internal constructor(
     val service: IUserService,
     private val leaseToken: LeaseToken,
@@ -52,6 +81,21 @@ object PrivilegedServiceManager {
     private val leasedIdsByGeneration = mutableMapOf<Long, MutableSet<Long>>()
 
     private enum class PrivilegedBackend { ROOT, SHIZUKU }
+
+    fun getBackendStatus(): PrivilegedBackendStatus {
+        val rootAvailable = tryRootAvailable()
+        val shizukuReachable = Shizuku.pingBinder()
+        val shizukuPermissionGranted = shizukuReachable &&
+            Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+        val shouldShowShizukuRationale = shizukuReachable && !shizukuPermissionGranted &&
+            Shizuku.shouldShowRequestPermissionRationale()
+        return PrivilegedBackendStatus(
+            rootAvailable = rootAvailable,
+            shizukuReachable = shizukuReachable,
+            shizukuPermissionGranted = shizukuPermissionGranted,
+            shouldShowShizukuRationale = shouldShowShizukuRationale,
+        )
+    }
 
     private fun serviceIfAlive(): IUserService? {
         val svc = connection?.serviceOrNull() ?: return null

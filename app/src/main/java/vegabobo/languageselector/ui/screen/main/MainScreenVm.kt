@@ -10,7 +10,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.accompanist.drawablepainter.DrawablePainter
-import com.topjohnwu.superuser.Shell
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -20,12 +19,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rikka.shizuku.Shizuku
 import vegabobo.languageselector.BuildConfig
 import vegabobo.languageselector.IUserService
 import vegabobo.languageselector.dao.AppInfoDb
 import vegabobo.languageselector.dao.RecordedLanguageStore
 import vegabobo.languageselector.logE
+import vegabobo.languageselector.service.PreferredPrivilegedBackend
 import vegabobo.languageselector.service.PrivilegedAcquisitionResult
 import vegabobo.languageselector.service.PrivilegedServiceLease
 import vegabobo.languageselector.service.PrivilegedServiceManager
@@ -47,24 +46,14 @@ class MainScreenVm @Inject constructor(
         it.pkg == lastSelectedApp?.pkg
     }
 
-    private fun loadOperationMode() {
-        if (Shell.getShell().isAlive) {
-            Shell.getShell().close()
+    private fun refreshBackendAvailability() {
+        _uiState.update {
+            it.copy(
+                hasPrivilegedBackend =
+                    PrivilegedServiceManager.getBackendStatus().preferredBackend !=
+                        PreferredPrivilegedBackend.NONE,
+            )
         }
-        Shell.getShell()
-        if (Shell.isAppGrantedRoot() == true) {
-            _uiState.update { it.copy(operationMode = OperationMode.ROOT) }
-            return
-        }
-
-        val isAvail = Shizuku.pingBinder() &&
-            Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
-        if (isAvail) {
-            _uiState.update { it.copy(operationMode = OperationMode.SHIZUKU) }
-            return
-        }
-
-        _uiState.update { it.copy(operationMode = OperationMode.NONE) }
     }
 
     init {
@@ -90,9 +79,7 @@ class MainScreenVm @Inject constructor(
 
     private fun fillListOfApps() {
         viewModelScope.launch(Dispatchers.IO) {
-            if (_uiState.value.operationMode == OperationMode.NONE) {
-                loadOperationMode()
-            }
+            refreshBackendAvailability()
             val packageList = buildAppList()
             val sortedList =
                 packageList.sortedBy { it.name.lowercase() }.sortedBy { !it.isModified() }
@@ -188,7 +175,7 @@ class MainScreenVm @Inject constructor(
     }
 
     fun onClickProceedShizuku() {
-        loadOperationMode()
+        refreshBackendAvailability()
     }
 
     val searchQuery = mutableStateOf("")

@@ -135,7 +135,7 @@ fun MainScreen(
                         },
                     )
 
-                    if (uiState.operationMode == OperationMode.NONE) {
+                    if (!uiState.hasPrivilegedBackend) {
                         ShizukuRequiredWarning { mainScreenVm.onClickProceedShizuku() }
                     }
 

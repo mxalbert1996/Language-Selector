@@ -6,12 +6,6 @@ import android.graphics.drawable.Drawable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.graphics.painter.Painter
 
-enum class OperationMode {
-    NONE,
-    SHIZUKU,
-    ROOT,
-}
-
 enum class SnackBarDisplay {
     NONE,
     MOVED_TO_TOP,
@@ -21,7 +15,7 @@ enum class SnackBarDisplay {
 data class MainScreenState(
     val listOfApps: MutableList<AppInfo> = mutableStateListOf(),
     val history: MutableList<AppInfo> = mutableStateListOf(),
-    val operationMode: OperationMode = OperationMode.NONE,
+    val hasPrivilegedBackend: Boolean = false,
     val isDropdownVisible: Boolean = false,
     val isAboutDialogVisible: Boolean = false,
     val isLoading: Boolean = true,

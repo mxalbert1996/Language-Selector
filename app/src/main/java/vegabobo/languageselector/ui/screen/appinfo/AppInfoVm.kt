@@ -66,15 +66,13 @@ class AppInfoVm @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             ensureHeldLease()?.let { service ->
-                _uiState.value.listOfSuggestedLanguages.clear()
-                for (i in 0 until service.systemLocales.size()) {
-                    val thisLocale = service.systemLocales[i]
-                    val thisLLI = SingleLocale(
-                        thisLocale.capDisplayName(),
-                        thisLocale.toLanguageTag(),
+                val suggestedLanguages = buildSuggestedLanguages(service.systemLocales)
+                val currentLanguage = readCurrentLanguageDisplay(service)
+                _uiState.update {
+                    it.copy(
+                        listOfSuggestedLanguages = suggestedLanguages,
+                        currentLanguage = currentLanguage,
                     )
-                    _uiState.value.listOfSuggestedLanguages.add(thisLLI)
-                    updateCurrentLanguageState()
                 }
             }
         }
@@ -85,14 +83,7 @@ class AppInfoVm @Inject constructor(
     private fun updateCurrentLanguageState() {
         viewModelScope.launch(Dispatchers.IO) {
             ensureHeldLease()?.let { service ->
-                val currentLocale = service.getApplicationLocales(appInfo.packageName)
-                if (!currentLocale.isEmpty) {
-                    _uiState.update {
-                        it.copy(
-                            currentLanguage = currentLocale.get(0).capDisplayName(),
-                        )
-                    }
-                }
+                _uiState.update { it.copy(currentLanguage = readCurrentLanguageDisplay(service)) }
             }
         }
     }
@@ -112,7 +103,7 @@ class AppInfoVm @Inject constructor(
                     appInfo.packageName,
                     LocaleList(singleLocale.toLocale()),
                 )
-                updateCurrentLanguageState()
+                _uiState.update { it.copy(currentLanguage = readCurrentLanguageDisplay(service)) }
                 true
             } ?: false
             if (ok) {
@@ -144,8 +135,7 @@ class AppInfoVm @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val ok = ensureHeldLease()?.let { service ->
                 service.setApplicationLocales(appInfo.packageName, LocaleList())
-                updateCurrentLanguageState()
-                _uiState.update { it.copy(currentLanguage = "") }
+                _uiState.update { it.copy(currentLanguage = readCurrentLanguageDisplay(service)) }
                 true
             } ?: false
             if (ok) recordedLanguageStore.clearRecordedLanguage(appInfo.packageName)
@@ -166,6 +156,17 @@ class AppInfoVm @Inject constructor(
                 acquired.lease.also { heldLease = it }.service
             else -> null
         }
+    }
+
+    private fun buildSuggestedLanguages(systemLocales: LocaleList): MutableList<SingleLocale> =
+        MutableList(systemLocales.size()) { index ->
+            val locale = systemLocales[index]
+            SingleLocale(locale.capDisplayName(), locale.toLanguageTag())
+        }
+
+    private fun readCurrentLanguageDisplay(service: IUserService): String {
+        val currentLocale = service.getApplicationLocales(appInfo.packageName)
+        return if (currentLocale.isEmpty) "" else currentLocale[0].capDisplayName()
     }
 
     private suspend fun releaseHeldLease() {

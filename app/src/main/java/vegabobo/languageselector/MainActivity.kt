@@ -10,6 +10,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import dagger.hilt.android.AndroidEntryPoint
 import rikka.shizuku.Shizuku
+import vegabobo.languageselector.service.PreferredPrivilegedBackend
+import vegabobo.languageselector.service.PrivilegedServiceManager
 import vegabobo.languageselector.sync.AppLanguageSyncCoordinator
 import vegabobo.languageselector.ui.screen.Navigation
 import vegabobo.languageselector.ui.theme.LanguageSelector
@@ -24,29 +26,31 @@ class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListe
 
     private val requestPermissionResultListener = this::onRequestPermissionResult
 
-    private fun bindShizuku() {
-        log("Preferred Shizuku backend available")
-    }
-
     override fun onRequestPermissionResult(requestCode: Int, grantResult: Int) {
         if (grantResult == PackageManager.PERMISSION_GRANTED) {
             log("Shizuku permission granted")
             AppLanguageSyncCoordinator(applicationContext).syncImmediate()
         }
+        requestNotificationPermission()
     }
 
-    private fun checkPermission(code: Int): Boolean =
-        if (Shizuku.checkSelfPermission() ==
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            bindShizuku()
-            true
-        } else if (Shizuku.shouldShowRequestPermissionRationale()) {
-            false
-        } else {
+    private fun checkPermission(code: Int) {
+        val status = PrivilegedServiceManager.getBackendStatus()
+        if (status.rootAvailable) {
+            log("ROOT available")
+        } else if (status.shizukuPermissionGranted) {
+            log("Shizuku backend available")
+        } else if (status.shouldRequestShizukuPermission) {
+            if (status.shouldShowShizukuRationale) {
+                log("Shizuku shouldShowRequestPermissionRationale")
+            }
             Shizuku.requestPermission(code)
-            false
+            return
+        } else {
+            log("No backend available")
         }
+        requestNotificationPermission()
+    }
 
     private fun requestNotificationPermission() {
         if (ContextCompat.checkSelfPermission(
@@ -66,10 +70,6 @@ class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListe
         }
 
         if (savedInstanceState == null) {
-            requestNotificationPermission()
-        }
-
-        if (Shizuku.pingBinder() && savedInstanceState == null) {
             Shizuku.addRequestPermissionResultListener(requestPermissionResultListener)
             checkPermission(acRequestCode)
         }
@@ -78,10 +78,10 @@ class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListe
 
     override fun onResume() {
         super.onResume()
-        if (Shizuku.pingBinder() &&
-            Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
-        ) {
-            log("Shizuku available")
+        when (PrivilegedServiceManager.getBackendStatus().preferredBackend) {
+            PreferredPrivilegedBackend.ROOT -> log("Root available")
+            PreferredPrivilegedBackend.SHIZUKU -> log("Shizuku available")
+            PreferredPrivilegedBackend.NONE -> Unit
         }
     }
 

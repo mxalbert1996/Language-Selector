@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import vegabobo.languageselector.IUserService
 import vegabobo.languageselector.di.appSingletonEntryPoint
 import vegabobo.languageselector.service.PrivilegedAcquisitionPolicy
 import vegabobo.languageselector.service.PrivilegedAcquisitionResult
@@ -57,50 +58,48 @@ class QSTile : TileService() {
         qsTile.updateTile()
     }
 
+    private suspend fun updateTileWithService(service: IUserService) {
+        val currentAppPackage = service.firstRunningTaskPackage
+        targetPackage = packageManager.getApplicationInfo(
+            currentAppPackage,
+            PackageManager.ApplicationInfoFlags.of(0),
+        )
+        if ((targetPackage.flags and ApplicationInfo.FLAG_SYSTEM) != 0 ||
+            targetPackage.packageName == BuildConfig.APPLICATION_ID
+        ) {
+            setDisabledTile()
+            return
+        }
+        var isCustomLocale = false
+        val currentLocale = try {
+            val appLocales = service.getApplicationLocales(currentAppPackage)
+            if (!appLocales.isEmpty) {
+                isCustomLocale = true
+                appLocales[0].capDisplayName()
+            } else {
+                ""
+            }
+        } catch (_: Exception) {
+            ""
+        }.ifBlank { getString(R.string.system_default) }
+        qsTile.state = Tile.STATE_INACTIVE
+        qsTile.updateTile()
+        qsTile.label = currentLocale
+        qsTile.subtitle = packageManager.getLabel(targetPackage)
+        qsTile.state = if (isCustomLocale) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+        qsTile.updateTile()
+    }
+
     private fun updateTile() {
         scope.launch {
-            val outcome = PrivilegedServiceManager.acquireLease(
-                applicationContext,
-                PrivilegedAcquisitionPolicy.AUTO,
-            )
-            if (outcome is PrivilegedAcquisitionResult.NoPrivilege ||
-                outcome is PrivilegedAcquisitionResult.TransientFailure
-            ) {
+            val outcome = PrivilegedServiceManager.acquireLease(applicationContext, PrivilegedAcquisitionPolicy.AUTO)
+            if (outcome is PrivilegedAcquisitionResult.NoPrivilege || outcome is PrivilegedAcquisitionResult.TransientFailure) {
                 setDisabledTile()
                 return@launch
             }
             val lease = (outcome as PrivilegedAcquisitionResult.Acquired).lease
             try {
-                val service = lease.service
-                val currentAppPackage = service.firstRunningTaskPackage
-                targetPackage = packageManager.getApplicationInfo(
-                    currentAppPackage,
-                    PackageManager.ApplicationInfoFlags.of(0),
-                )
-                if ((targetPackage.flags and ApplicationInfo.FLAG_SYSTEM) != 0 ||
-                    targetPackage.packageName == BuildConfig.APPLICATION_ID
-                ) {
-                    setDisabledTile()
-                    return@launch
-                }
-                var isCustomLocale = false
-                val currentLocale = try {
-                    val appLocales = service.getApplicationLocales(currentAppPackage)
-                    if (!appLocales.isEmpty) {
-                        isCustomLocale = true
-                        appLocales[0].capDisplayName()
-                    } else {
-                        ""
-                    }
-                } catch (_: Exception) {
-                    ""
-                }.ifBlank { getString(R.string.system_default) }
-                qsTile.state = Tile.STATE_INACTIVE
-                qsTile.updateTile()
-                qsTile.label = currentLocale
-                qsTile.subtitle = packageManager.getLabel(targetPackage)
-                qsTile.state = if (isCustomLocale) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
-                qsTile.updateTile()
+                updateTileWithService(lease.service)
             } finally {
                 lease.release()
             }
@@ -171,7 +170,7 @@ class QSTile : TileService() {
                         nextLocale.languageTag,
                     )
                 }
-                updateTile()
+                updateTileWithService(service)
             } finally {
                 lease.release()
             }
